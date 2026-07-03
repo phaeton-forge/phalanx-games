@@ -19,6 +19,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        # Full history so paths-filter can diff against the base branch.
+        with:
+          fetch-depth: 0
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -32,5 +35,59 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build games
-        run: pnpm build
+      # Detect which apps changed so we only build what's affected.
+      # `shared` covers root config that influences every package (deps,
+      # workspace layout) — a change there triggers a full build.
+      - name: Detect changed packages
+        uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            shared:
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - 'package.json'
+            chapaev:
+              - 'chapaev/**'
+              - '!chapaev/server/**'
+            chapaev-server:
+              - 'chapaev/server/**'
+            arena-shooter:
+              - 'arena-shooter/**'
+            direct-strike:
+              - 'direct-strike-babylon-example/**'
+
+      - name: Build affected packages
+        run: |
+          set -e
+          if [ "${{ steps.changes.outputs.shared }}" = "true" ]; then
+            echo "::notice::Shared config changed — building all packages"
+            pnpm build
+            exit 0
+          fi
+
+          built_any=false
+          if [ "${{ steps.changes.outputs.chapaev }}" = "true" ]; then
+            echo "::notice::Building chapaev (client)"
+            pnpm build:chapaev
+            built_any=true
+          fi
+          if [ "${{ steps.changes.outputs.chapaev-server }}" = "true" ]; then
+            echo "::notice::Building chapaev-server"
+            pnpm build:chapaev-server
+            built_any=true
+          fi
+          if [ "${{ steps.changes.outputs.arena-shooter }}" = "true" ]; then
+            echo "::notice::Building arena-shooter"
+            pnpm build:arena-shooter
+            built_any=true
+          fi
+          if [ "${{ steps.changes.outputs.direct-strike }}" = "true" ]; then
+            echo "::notice::Building direct-strike"
+            pnpm build:direct-strike
+            built_any=true
+          fi
+
+          if [ "$built_any" = "false" ]; then
+            echo "::notice::No buildable changes detected — skipping build"
+          fi
