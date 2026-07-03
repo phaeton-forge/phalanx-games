@@ -3,6 +3,7 @@ node_modules/
 
 # Build output
 dist/
+dist-zip/
 
 # TypeScript compilation output (should not be committed)
 *.d.ts

@@ -1,0 +1,76 @@
+name: Release Chapaev
+
+# Builds the client once and dispatches to selected targets via the same
+# release.mjs used locally, so CI and local behaviour stay identical.
+#   web  -> build + upload dist/ to the Yandex Cloud bucket
+#   zip  -> build + zip dist/ into dist-zip/chapaev.zip (CrazyGames / Yandex Games submission)
+on:
+  workflow_dispatch:
+    inputs:
+      targets:
+        description: 'Release targets (comma-separated: web,zip)'
+        required: true
+        default: 'web,zip'
+        type: string
+  push:
+    tags:
+      - 'chapaev-v*'
+
+concurrency:
+  group: release-chapaev-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Resolve targets
+        id: targets
+        run: |
+          # Tag pushes default to all targets; manual runs use the input.
+          TARGETS="${{ inputs.targets }}"
+          if [ -z "$TARGETS" ]; then TARGETS="web,zip"; fi
+          echo "targets=$TARGETS" >> "$GITHUB_OUTPUT"
+
+      - name: Build, upload, and zip
+        working-directory: chapaev
+        env:
+          # Web target (yc_bucket_deploy.mjs reads these).
+          BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
+          YC_DEPLOYMENT_KEY: ${{ secrets.YC_DEPLOYMENT_KEY }}
+          YC_DEPLOYMENT_SECRET: ${{ secrets.YC_DEPLOYMENT_SECRET }}
+          # Prod env vars baked into the build.
+          VITE_SERVER_URL: ${{ secrets.VITE_SERVER_URL }}
+          VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
+          VITE_TELEGRAM_BOT: ${{ secrets.VITE_TELEGRAM_BOT }}
+          VITE_TELEGRAM_APP: ${{ secrets.VITE_TELEGRAM_APP }}
+          VITE_MONETAG_ZONE_ID: ${{ secrets.VITE_MONETAG_ZONE_ID }}
+          VITE_ENABLE_DEBUG_CONSOLE: 'false'
+        run: pnpm release --targets ${{ steps.targets.outputs.targets }}
+
+      - name: Upload zip artifact
+        if: contains(steps.targets.outputs.targets, 'zip')
+        uses: actions/upload-artifact@v4
+        with:
+          name: chapaev-zip
+          path: chapaev/dist-zip/chapaev.zip
+          if-no-files-found: error
+          retention-days: 30
