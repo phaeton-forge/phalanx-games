@@ -112,6 +112,7 @@ To enable Google Sign-In authentication:
    - The client secret is kept secure on the server (never exposed to browser)
 
 **How it works:**
+
 1. User clicks "Sign in with Google" → redirected to Google OAuth
 2. After sign-in, Google redirects back with an authorization code
 3. Client sends code to server's `/auth/token` endpoint
@@ -119,6 +120,7 @@ To enable Google Sign-In authentication:
 5. Client receives ID token and uses it for game authentication
 
 When authentication is enabled:
+
 - Users see "Sign in with Google" button in the lobby
 - After signing in, "Find Game" button appears
 - JWT tokens are sent to the server with WebSocket connections

@@ -46,7 +46,6 @@ export class HealthSystem extends GameSystem {
     this.setupEventListeners();
   }
 
-
   /**
    * Update the current tick (call this from LockstepManager before processing)
    * @param tick Current simulation tick
@@ -67,12 +66,16 @@ export class HealthSystem extends GameSystem {
     const dyingEntities = this.entityManager.queryEntities(ComponentType.Death);
 
     for (const entity of dyingEntities) {
-      const deathComp = entity.getComponent<DeathComponent>(ComponentType.Death);
+      const deathComp = entity.getComponent<DeathComponent>(
+        ComponentType.Death
+      );
       if (!deathComp || !deathComp.isDying) continue;
 
       // Check if death timer has expired
       if (deathComp.shouldCompleteThisTick(_tick)) {
-        const transform = entity.getComponent<TransformComponent>(ComponentType.Transform);
+        const transform = entity.getComponent<TransformComponent>(
+          ComponentType.Transform
+        );
 
         // Emit entity destroyed event before destroying
         this.eventBus.emit<EntityDestroyedEvent>(GameEvents.ENTITY_DESTROYED, {
@@ -98,26 +101,20 @@ export class HealthSystem extends GameSystem {
     );
 
     // Listen for heal requests
-    this.subscribe<HealRequestedEvent>(
-      GameEvents.HEAL_REQUESTED,
-      (event) => {
-        const entity = this.entityManager.getEntity(event.entityId) as Unit | undefined;
-        if (entity) {
-          this.heal(entity, event.amount);
-        }
+    this.subscribe<HealRequestedEvent>(GameEvents.HEAL_REQUESTED, (event) => {
+      const entity = this.entityManager.getEntity(event.entityId) as
+        Unit | undefined;
+      if (entity) {
+        this.heal(entity, event.amount);
       }
-    );
+    });
   }
 
   /**
    * Apply damage to an entity
    * @returns true if entity was destroyed by this damage
    */
-  public applyDamage(
-    entity: Unit,
-    amount: number,
-    sourceId?: number
-  ): boolean {
+  public applyDamage(entity: Unit, amount: number, sourceId?: number): boolean {
     const health = entity.getComponent<HealthComponent>(ComponentType.Health);
     if (!health) return false;
 
@@ -146,7 +143,9 @@ export class HealthSystem extends GameSystem {
 
     if (wasDestroyed) {
       // Handle death differently for entities with DeathComponent (units with animations)
-      const deathComp = entity.getComponent<DeathComponent>(ComponentType.Death);
+      const deathComp = entity.getComponent<DeathComponent>(
+        ComponentType.Death
+      );
 
       if (deathComp) {
         // Stop any ongoing movement immediately
@@ -158,7 +157,9 @@ export class HealthSystem extends GameSystem {
         }
 
         // Mark entity to be ignored by physics (dying units shouldn't move or collide)
-        const body = entity.getComponent<PhysicsBodyComponent>(ComponentType.PhysicsBody);
+        const body = entity.getComponent<PhysicsBodyComponent>(
+          ComponentType.PhysicsBody
+        );
         if (body) {
           body.ignorePhysics = true;
         }
@@ -178,15 +179,20 @@ export class HealthSystem extends GameSystem {
 
         // Start visual death animation via event (purely cosmetic, does NOT control timing)
         if (animComp) {
-          this.eventBus.emit<PlayDeathAnimationEvent>(GameEvents.PLAY_DEATH_ANIMATION, {
-            ...createEvent(),
-            entityId: entity.id,
-          });
+          this.eventBus.emit<PlayDeathAnimationEvent>(
+            GameEvents.PLAY_DEATH_ANIMATION,
+            {
+              ...createEvent(),
+              entityId: entity.id,
+            }
+          );
         }
       } else {
         // For other entities (no DeathComponent), destroy immediately
         // Emit entity destroyed event before destroying
-        const transform = entity.getComponent<TransformComponent>(ComponentType.Transform);
+        const transform = entity.getComponent<TransformComponent>(
+          ComponentType.Transform
+        );
         this.eventBus.emit<EntityDestroyedEvent>(GameEvents.ENTITY_DESTROYED, {
           ...createEvent(),
           entityId: entity.id,

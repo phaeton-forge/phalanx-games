@@ -102,12 +102,9 @@ export class ResourceSystem extends GameSystem {
 
   private setupEventListeners(): void {
     // Listen for tower destruction to grant bonus
-    this.subscribe<TowerDestroyedEvent>(
-      GameEvents.TOWER_DESTROYED,
-      (event) => {
-        this.handleTowerDestroyed(event);
-      }
-    );
+    this.subscribe<TowerDestroyedEvent>(GameEvents.TOWER_DESTROYED, (event) => {
+      this.handleTowerDestroyed(event);
+    });
 
     // Listen for unit purchase requests
     this.subscribe<UnitPurchaseRequestedEvent>(

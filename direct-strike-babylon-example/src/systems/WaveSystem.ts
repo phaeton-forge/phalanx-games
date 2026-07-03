@@ -159,7 +159,8 @@ export class WaveSystem extends GameSystem {
       ...createEvent(),
       waveNumber: 0,
       isPreparationWave: true,
-    });  }
+    });
+  }
 
   /**
    * Process a simulation tick
@@ -343,6 +344,7 @@ export class WaveSystem extends GameSystem {
 
       // Break if no more units to deploy
       if (!deployedAny) break;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       playerIndex++;
     }
 
@@ -367,8 +369,10 @@ export class WaveSystem extends GameSystem {
       // Note: totalDeployed will be 0 here since we cleared the counts,
       // so we calculate it from the original counts stored before clearing
       let grandTotal = 0;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       for (const playerId of this.playerIds) {
         // The count was stored before deployment started
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         grandTotal += this.deploymentCounts.get(playerId) || 0;
       }
 

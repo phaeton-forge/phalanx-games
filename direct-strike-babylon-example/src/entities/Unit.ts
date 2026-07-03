@@ -1,6 +1,6 @@
 import { Scene, Vector3, Mesh } from '@babylonjs/core';
 import { Entity } from '@phalanx-engine/ecs';
-import type { IMeshEntity } from '../interfaces/IMeshEntity';
+import type { IMeshEntity } from '../interfaces';
 
 /**
  * Unit - Game-specific entity base class with Babylon.js rendering support
@@ -59,4 +59,3 @@ export class Unit extends Entity implements IMeshEntity {
     super.dispose();
   }
 }
-

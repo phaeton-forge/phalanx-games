@@ -1,7 +1,14 @@
-import {Color3, Mesh, MeshBuilder, Scene, StandardMaterial, Vector3,} from '@babylonjs/core';
-import {Entity} from '@phalanx-engine/ecs';
-import {TeamTag} from '../enums/TeamTag';
-import type {IMeshEntity} from '../interfaces';
+import {
+  Color3,
+  Mesh,
+  MeshBuilder,
+  Scene,
+  StandardMaterial,
+  Vector3,
+} from '@babylonjs/core';
+import { Entity } from '@phalanx-engine/ecs';
+import { TeamTag } from '../enums/TeamTag';
+import type { IMeshEntity } from '../interfaces';
 
 /**
  * ProjectileEntity - ECS entity with laser beam mesh
@@ -27,7 +34,12 @@ export class ProjectileEntity extends Entity implements IMeshEntity {
    * Initialize or reposition the visual mesh.
    * Creates mesh lazily on first call; repositions on subsequent calls.
    */
-  public initVisual(scene: Scene, origin: Vector3, direction: Vector3, team: TeamTag): void {
+  public initVisual(
+    scene: Scene,
+    origin: Vector3,
+    direction: Vector3,
+    team: TeamTag
+  ): void {
     this.scene = scene;
 
     if (!this.mesh) {
@@ -81,7 +93,9 @@ export class ProjectileEntity extends Entity implements IMeshEntity {
       this.mesh!.rotationQuaternion = null;
       this.mesh!.rotation.setAll(0);
 
-      this._targetPos.copyFrom(this.mesh!.position).addInPlace(this._normalizedDir);
+      this._targetPos
+        .copyFrom(this.mesh!.position)
+        .addInPlace(this._normalizedDir);
       this.mesh!.lookAt(this._targetPos);
       this.mesh!.rotation.x += Math.PI / 2;
     }
@@ -100,8 +114,7 @@ export class ProjectileEntity extends Entity implements IMeshEntity {
   /**
    * Pool reset: hide mesh but don't dispose it.
    */
-  public override reset(): void {
-    super.reset();
+  public reset(): void {
     if (this.mesh) {
       this.mesh.setEnabled(false);
     }
@@ -110,7 +123,7 @@ export class ProjectileEntity extends Entity implements IMeshEntity {
   /**
    * Full disposal: dispose mesh and GPU resources.
    */
-  public override dispose(): void {
+  public dispose(): void {
     if (this.mesh) {
       this.mesh.dispose();
       this.mesh = null;

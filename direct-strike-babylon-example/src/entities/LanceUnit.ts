@@ -202,7 +202,6 @@ export class LanceUnit extends Unit {
     return crystal;
   }
 
-
   private createRangeIndicator(): void {
     const attack = this.getComponent<AttackComponent>(ComponentType.Attack);
     if (!attack) return;

@@ -118,7 +118,6 @@ export class Base extends Unit {
     this.rangeIndicator.material = material;
   }
 
-
   // Debug methods
   public get debug(): boolean {
     return this._debug;

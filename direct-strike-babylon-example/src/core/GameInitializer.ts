@@ -62,9 +62,7 @@ export class GameInitializer {
   /**
    * Set late-initialized systems
    */
-  public setLateSystems(
-    cameraController: CameraController
-  ): void {
+  public setLateSystems(cameraController: CameraController): void {
     this.cameraController = cameraController;
   }
 
@@ -264,6 +262,3 @@ export class GameInitializer {
     );
   }
 }
-
-
-

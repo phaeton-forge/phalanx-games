@@ -1,11 +1,20 @@
-import {AdvancedDynamicTexture, Control, Rectangle} from '@babylonjs/gui';
+import { AdvancedDynamicTexture, Control, Rectangle } from '@babylonjs/gui';
 import type { Scene } from '@babylonjs/core';
 import type { SystemContext } from '@phalanx-engine/ecs';
 import { GameSystem } from '@phalanx-engine/ecs';
 import type { Unit } from '../entities/Unit';
-import {ComponentType, HealthComponent, HealthBarComponent, DeathComponent} from '../components';
-import type {DamageAppliedEvent, EntityDestroyedEvent, EntityDyingEvent,} from '../events';
-import {GameEvents} from '../events';
+import {
+  ComponentType,
+  HealthComponent,
+  HealthBarComponent,
+  DeathComponent,
+} from '../components';
+import type {
+  DamageAppliedEvent,
+  EntityDestroyedEvent,
+  EntityDyingEvent,
+} from '../events';
+import { GameEvents } from '../events';
 
 interface HealthBarUI {
   entityId: number;
@@ -62,24 +71,14 @@ export class HealthBarSystem extends GameSystem {
 
   private setupEventListeners(): void {
     // Listen for damage events to update health bars
-    this.subscribe<DamageAppliedEvent>(
-      GameEvents.DAMAGE_APPLIED,
-      (event) => {
-        this.updateHealthBar(
-          event.entityId,
-          event.newHealth,
-          event.maxHealth
-        );
-      }
-    );
+    this.subscribe<DamageAppliedEvent>(GameEvents.DAMAGE_APPLIED, (event) => {
+      this.updateHealthBar(event.entityId, event.newHealth, event.maxHealth);
+    });
 
     // Listen for entity dying to remove health bar immediately (before death animation)
-    this.subscribe<EntityDyingEvent>(
-      GameEvents.ENTITY_DYING,
-      (event) => {
-        this.removeHealthBarUI(event.entityId);
-      }
-    );
+    this.subscribe<EntityDyingEvent>(GameEvents.ENTITY_DYING, (event) => {
+      this.removeHealthBarUI(event.entityId);
+    });
 
     // Listen for entity destruction to cleanup health bars
     this.subscribe<EntityDestroyedEvent>(
@@ -93,7 +92,10 @@ export class HealthBarSystem extends GameSystem {
   /**
    * Create a health bar UI for an entity
    */
-  private createHealthBarUI(entityId: number, heightOffset: number): HealthBarUI {
+  private createHealthBarUI(
+    entityId: number,
+    heightOffset: number
+  ): HealthBarUI {
     // Container rectangle (groups background and foreground)
     const container = new Rectangle(`healthBar_container_${entityId}`);
     container.width = `${this.BAR_WIDTH + 4}px`;
@@ -226,7 +228,9 @@ export class HealthBarSystem extends GameSystem {
       seenEntityIds.add(entity.id);
 
       // Skip dying entities - their health bars were already removed by ENTITY_DYING event
-      const deathComp = entity.getComponent<DeathComponent>(ComponentType.Death);
+      const deathComp = entity.getComponent<DeathComponent>(
+        ComponentType.Death
+      );
       if (deathComp?.isDying) {
         // Also ensure any lingering UI is removed
         this.removeHealthBarUI(entity.id);
@@ -237,15 +241,22 @@ export class HealthBarSystem extends GameSystem {
       if (this.healthBarUIs.has(entity.id)) continue;
 
       // Get required components
-      const healthBarComp = entity.getComponent<HealthBarComponent>(ComponentType.HealthBar);
-      const healthComp = entity.getComponent<HealthComponent>(ComponentType.Health);
+      const healthBarComp = entity.getComponent<HealthBarComponent>(
+        ComponentType.HealthBar
+      );
+      const healthComp = entity.getComponent<HealthComponent>(
+        ComponentType.Health
+      );
       if (!healthBarComp || !healthComp) continue;
 
       const mesh = (entity as Unit).getMesh();
       if (!mesh) continue;
 
       // Create health bar UI for this entity
-      const healthBarUI = this.createHealthBarUI(entity.id, healthBarComp.heightOffset);
+      const healthBarUI = this.createHealthBarUI(
+        entity.id,
+        healthBarComp.heightOffset
+      );
       this.healthBarUIs.set(entity.id, healthBarUI);
 
       // Link the container to the entity's mesh

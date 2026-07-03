@@ -1,6 +1,9 @@
 import type { EventBus } from '@phalanx-engine/ecs';
 import { GameEvents } from '../events';
-import type { UIResourcesUpdatedEvent, UIFormationUpdatedEvent } from '../events';
+import type {
+  UIResourcesUpdatedEvent,
+  UIFormationUpdatedEvent,
+} from '../events';
 import { pauseConfig } from '../config/constants';
 
 /**
@@ -44,8 +47,7 @@ export class UIManager {
   // Callbacks
   private onExitCallback: (() => void) | null = null;
   private beforeUnloadHandler:
-    | ((e: BeforeUnloadEvent) => string | undefined)
-    | null = null;
+    ((e: BeforeUnloadEvent) => string | undefined) | null = null;
   private notificationTimeout: number | null = null;
 
   // Touch drag state for unit placement
@@ -60,10 +62,7 @@ export class UIManager {
   // Unsubscribe functions for event listeners
   private unsubscribers: (() => void)[] = [];
 
-  constructor(
-    eventBus: EventBus,
-    localPlayerId: string
-  ) {
+  constructor(eventBus: EventBus, localPlayerId: string) {
     this.eventBus = eventBus;
     this.localPlayerId = localPlayerId;
 
@@ -241,7 +240,8 @@ export class UIManager {
 
     // Update resume button based on requireSamePlayerToResume
     if (resumeBtn) {
-      const canResume = !pauseConfig.requireSamePlayerToResume ||
+      const canResume =
+        !pauseConfig.requireSamePlayerToResume ||
         pausedByPlayerId === this.localPlayerId;
 
       if (canResume) {
@@ -395,7 +395,9 @@ export class UIManager {
     const rateEl = document.getElementById('resource-rate');
 
     if (amountEl) {
-      amountEl.textContent = Math.floor(this.cachedResources.currentResources).toString();
+      amountEl.textContent = Math.floor(
+        this.cachedResources.currentResources
+      ).toString();
     }
 
     if (rateEl) {

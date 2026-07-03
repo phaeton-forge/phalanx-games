@@ -80,7 +80,11 @@ export class FormationGridSystem extends GameSystem {
       this.renderer,
       this.hoverPreview
     );
-    this.deployer = new FormationDeployer(this.eventBus, this.gridData, this.context);
+    this.deployer = new FormationDeployer(
+      this.eventBus,
+      this.gridData,
+      this.context
+    );
 
     this.setupEventListeners();
   }

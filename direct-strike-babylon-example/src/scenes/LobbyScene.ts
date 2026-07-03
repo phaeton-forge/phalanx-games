@@ -25,7 +25,10 @@ export class LobbyScene {
 
   // Callbacks
   private onGameStart:
-    | ((client: PhalanxClient, matchData: MatchFoundEvent) => void | Promise<void>)
+    | ((
+        client: PhalanxClient,
+        matchData: MatchFoundEvent
+      ) => void | Promise<void>)
     | null = null;
 
   // Network event unsubscribers (to clean up when returning to lobby)
@@ -46,20 +49,23 @@ export class LobbyScene {
 
     // Create PhalanxClient with auth configuration
     this.client = new PhalanxClient({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       serverUrl: SERVER_URL,
-      auth: authConfig.authEnabled ? {
-        provider: 'google',
-        google: {
-          clientId: authConfig.googleClientId,
-          tokenExchangeUrl: authConfig.tokenExchangeUrl,
-        },
-      } : undefined,
+      auth: authConfig.authEnabled
+        ? {
+            provider: 'google',
+            google: {
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              clientId: authConfig.googleClientId,
+              tokenExchangeUrl: authConfig.tokenExchangeUrl,
+            },
+          }
+        : undefined,
       pause: pauseConfig,
     });
 
     // Subscribe to auth events
     this.client.on('authStateChanged', (state) => {
-      console.log('[LobbyScene] Auth state changed:', state);
       this.updateUIForAuthState(state);
     });
 
@@ -103,16 +109,23 @@ export class LobbyScene {
 
       // Update user info display
       this.userInfoElement.style.display = 'flex';
-      const avatarImg = this.userInfoElement.querySelector('#user-avatar') as HTMLImageElement;
-      const userName = this.userInfoElement.querySelector('#user-name') as HTMLSpanElement;
-      const signOutBtn = this.userInfoElement.querySelector('#sign-out-btn') as HTMLButtonElement;
+      const avatarImg = this.userInfoElement.querySelector(
+        '#user-avatar'
+      ) as HTMLImageElement;
+      const userName = this.userInfoElement.querySelector(
+        '#user-name'
+      ) as HTMLSpanElement;
+      const signOutBtn = this.userInfoElement.querySelector(
+        '#sign-out-btn'
+      ) as HTMLButtonElement;
 
       if (avatarImg && authState.user.avatarUrl) {
         avatarImg.src = authState.user.avatarUrl;
         avatarImg.style.display = 'block';
       }
       if (userName) {
-        userName.textContent = authState.user.username || authState.user.email || 'Player';
+        userName.textContent =
+          authState.user.username || authState.user.email || 'Player';
       }
       if (signOutBtn) {
         signOutBtn.onclick = () => void this.handleSignOut();
@@ -155,7 +168,10 @@ export class LobbyScene {
    * Set callback for game start
    */
   setOnGameStart(
-    callback: (client: PhalanxClient, matchData: MatchFoundEvent) => void | Promise<void>
+    callback: (
+      client: PhalanxClient,
+      matchData: MatchFoundEvent
+    ) => void | Promise<void>
   ): void {
     this.onGameStart = callback;
   }

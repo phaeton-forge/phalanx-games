@@ -2,8 +2,16 @@ import { Vector3 } from '@babylonjs/core';
 import type { SystemContext, SoAComponentStore } from '@phalanx-engine/ecs';
 import { GameSystem } from '@phalanx-engine/ecs';
 import type { Unit } from '../entities/Unit';
-import { ComponentType, MovementComponent, TransformSoASchema, TransformComponent } from '../components';
-import { PhysicsSoASchema, type PhysicsBodyComponent } from '@phalanx-engine/physics';
+import {
+  ComponentType,
+  MovementComponent,
+  TransformSoASchema,
+  TransformComponent,
+} from '../components';
+import {
+  PhysicsSoASchema,
+  type PhysicsBodyComponent,
+} from '@phalanx-engine/physics';
 import { FP } from '@phalanx-engine/math';
 import { GameEvents, createEvent } from '../events';
 import type {
@@ -30,14 +38,18 @@ const FP_ARRIVAL_THRESHOLD_SQ = FP.FromFloat(0.25); // 0.5^2
  */
 export class MovementSystem extends GameSystem {
   private physicsStore!: SoAComponentStore<typeof PhysicsSoASchema.definition>;
-  private transformStore!: SoAComponentStore<typeof TransformSoASchema.definition>;
+  private transformStore!: SoAComponentStore<
+    typeof TransformSoASchema.definition
+  >;
   /**
    * Initialize the system with context
    */
   public override init(context: SystemContext): void {
     super.init(context);
-    this.physicsStore = this.entityManager.getOrCreateSoAStore(PhysicsSoASchema);
-    this.transformStore = this.entityManager.getOrCreateSoAStore(TransformSoASchema);
+    this.physicsStore =
+      this.entityManager.getOrCreateSoAStore(PhysicsSoASchema);
+    this.transformStore =
+      this.entityManager.getOrCreateSoAStore(TransformSoASchema);
     this.setupEventListeners();
   }
 
@@ -47,12 +59,9 @@ export class MovementSystem extends GameSystem {
     // moveEntityTo() calls from Game.ts executeTickCommands().
 
     // Listen for stop requests
-    this.subscribe<StopRequestedEvent>(
-      GameEvents.STOP_REQUESTED,
-      (event) => {
-        this.stopEntity(event.entityId);
-      }
-    );
+    this.subscribe<StopRequestedEvent>(GameEvents.STOP_REQUESTED, (event) => {
+      this.stopEntity(event.entityId);
+    });
   }
 
   /**
@@ -95,7 +104,9 @@ export class MovementSystem extends GameSystem {
       const entity = this.entityManager.getEntity(entityId);
       if (!entity) continue;
 
-      const movement = entity.getComponent<MovementComponent>(ComponentType.Movement);
+      const movement = entity.getComponent<MovementComponent>(
+        ComponentType.Movement
+      );
       if (!movement) continue;
 
       if (movement.isMoving) {
@@ -147,7 +158,9 @@ export class MovementSystem extends GameSystem {
       if (movement.hasJustArrived()) {
         movement.acknowledgeArrival();
 
-        const transform = entity.getComponent<TransformComponent>(ComponentType.Transform);
+        const transform = entity.getComponent<TransformComponent>(
+          ComponentType.Transform
+        );
 
         this.eventBus.emit<MoveCompletedEvent>(GameEvents.MOVE_COMPLETED, {
           ...createEvent(),
@@ -166,7 +179,9 @@ export class MovementSystem extends GameSystem {
     if (!entity) return false;
 
     // Don't allow entities ignored by physics to move (e.g., dying units)
-    const body = entity.getComponent<PhysicsBodyComponent>(ComponentType.PhysicsBody);
+    const body = entity.getComponent<PhysicsBodyComponent>(
+      ComponentType.PhysicsBody
+    );
     if (body?.ignorePhysics) return false;
 
     const movement = entity.getComponent<MovementComponent>(

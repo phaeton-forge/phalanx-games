@@ -1,11 +1,12 @@
 import type { SystemContext } from '@phalanx-engine/ecs';
 import { GameSystem } from '@phalanx-engine/ecs';
-import type { IMeshEntity } from '../interfaces/IMeshEntity';
+import type { IMeshEntity } from '../interfaces';
+import { fpToVector3Ref, lerpVector3FromFpRef } from '../core/MathConversions';
 import {
-  fpToVector3Ref,
-  lerpVector3FromFpRef,
-} from '../core/MathConversions';
-import { ComponentType, InterpolationComponent, TransformComponent } from '../components';
+  ComponentType,
+  InterpolationComponent,
+  TransformComponent,
+} from '../components';
 
 /**
  * InterpolationSystem - Provides smooth visual movement between network ticks
@@ -48,10 +49,14 @@ export class InterpolationSystem extends GameSystem {
    * Call this BEFORE running simulation tick
    */
   public snapshotPositions(): void {
-    const entities = this.entityManager.queryEntities(ComponentType.Interpolation);
+    const entities = this.entityManager.queryEntities(
+      ComponentType.Interpolation
+    );
 
     for (const entity of entities) {
-      const interpolation = entity.getComponent<InterpolationComponent>(ComponentType.Interpolation);
+      const interpolation = entity.getComponent<InterpolationComponent>(
+        ComponentType.Interpolation
+      );
       if (!interpolation || !interpolation.active) continue;
 
       interpolation.snapshotPosition();
@@ -63,11 +68,17 @@ export class InterpolationSystem extends GameSystem {
    * Call this AFTER running simulation tick
    */
   public captureCurrentPositions(): void {
-    const entities = this.entityManager.queryEntities(ComponentType.Interpolation);
+    const entities = this.entityManager.queryEntities(
+      ComponentType.Interpolation
+    );
 
     for (const entity of entities) {
-      const interpolation = entity.getComponent<InterpolationComponent>(ComponentType.Interpolation);
-      const transform = entity.getComponent<TransformComponent>(ComponentType.Transform);
+      const interpolation = entity.getComponent<InterpolationComponent>(
+        ComponentType.Interpolation
+      );
+      const transform = entity.getComponent<TransformComponent>(
+        ComponentType.Transform
+      );
       if (!interpolation || !interpolation.active || !transform) continue;
 
       interpolation.capturePosition(transform.fpPosition);
@@ -87,10 +98,14 @@ export class InterpolationSystem extends GameSystem {
     // Clamp alpha to valid range
     alpha = Math.max(0, Math.min(1, alpha));
 
-    const entities = this.entityManager.queryEntities(ComponentType.Interpolation);
+    const entities = this.entityManager.queryEntities(
+      ComponentType.Interpolation
+    );
 
     for (const entity of entities) {
-      const interpolation = entity.getComponent<InterpolationComponent>(ComponentType.Interpolation);
+      const interpolation = entity.getComponent<InterpolationComponent>(
+        ComponentType.Interpolation
+      );
       if (!interpolation || !interpolation.active) continue;
 
       // Lerp between previous and current fixed-point positions,
@@ -103,7 +118,9 @@ export class InterpolationSystem extends GameSystem {
       );
 
       // Apply visual position to the entity's mesh
-      (entity as unknown as IMeshEntity).setVisualPosition(interpolation.visualPosition);
+      (entity as unknown as IMeshEntity).setVisualPosition(
+        interpolation.visualPosition
+      );
     }
   }
 
@@ -112,11 +129,17 @@ export class InterpolationSystem extends GameSystem {
    * Use this when teleporting or on initial spawn
    */
   public snapToCurrentPositions(): void {
-    const entities = this.entityManager.queryEntities(ComponentType.Interpolation);
+    const entities = this.entityManager.queryEntities(
+      ComponentType.Interpolation
+    );
 
     for (const entity of entities) {
-      const interpolation = entity.getComponent<InterpolationComponent>(ComponentType.Interpolation);
-      const transform = entity.getComponent<TransformComponent>(ComponentType.Transform);
+      const interpolation = entity.getComponent<InterpolationComponent>(
+        ComponentType.Interpolation
+      );
+      const transform = entity.getComponent<TransformComponent>(
+        ComponentType.Transform
+      );
       if (!interpolation || !transform) continue;
 
       // Snap to current entity position
@@ -127,7 +150,9 @@ export class InterpolationSystem extends GameSystem {
       fpToVector3Ref(fpPos, interpolation.visualPosition);
 
       // Apply to mesh
-      (entity as unknown as IMeshEntity).setVisualPosition(interpolation.visualPosition);
+      (entity as unknown as IMeshEntity).setVisualPosition(
+        interpolation.visualPosition
+      );
     }
   }
 

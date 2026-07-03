@@ -29,11 +29,7 @@ import type {
 } from '../events';
 import { createEvent, GameEvents } from '../events';
 import { networkConfig } from '../config/constants';
-import {
-  FP,
-  FPVector3,
-  type FixedPoint,
-} from '@phalanx-engine/math';
+import { FP, FPVector3, type FixedPoint } from '@phalanx-engine/math';
 
 /**
  * Combat system configuration for deterministic simulation
@@ -98,18 +94,18 @@ export class CombatSystem extends GameSystem {
     // Combat-initiated moves are deterministic simulation decisions — they must
     // execute immediately in the same tick, not go through the network.
     const ms = context.getSystem(MovementSystem);
-    if (!ms) throw new Error('CombatSystem requires MovementSystem to be registered first');
+    if (!ms)
+      throw new Error(
+        'CombatSystem requires MovementSystem to be registered first'
+      );
     this.movementSystem = ms;
 
     // Listen for damage events to track who attacked whom
-    this.subscribe<DamageAppliedEvent>(
-      GameEvents.DAMAGE_APPLIED,
-      (event) => {
-        if (event.sourceId !== undefined) {
-          this.handleDamageReceived(event.entityId, event.sourceId);
-        }
+    this.subscribe<DamageAppliedEvent>(GameEvents.DAMAGE_APPLIED, (event) => {
+      if (event.sourceId !== undefined) {
+        this.handleDamageReceived(event.entityId, event.sourceId);
       }
-    );
+    });
   }
 
   /**
@@ -140,7 +136,6 @@ export class CombatSystem extends GameSystem {
     // Set aggro target - this unit will prioritize attacking who hit them
     this.aggroTargets.set(targetId, attackerId);
   }
-
 
   /**
    * Process one network tick worth of combat
@@ -207,7 +202,9 @@ export class CombatSystem extends GameSystem {
       let aggroTarget: Unit | null = null;
 
       if (aggroTargetId !== undefined) {
-        aggroTarget = (this.entityManager.getEntity(aggroTargetId) as Unit | undefined) ?? null;
+        aggroTarget =
+          (this.entityManager.getEntity(aggroTargetId) as Unit | undefined) ??
+          null;
         const aggroHealth = aggroTarget?.getComponent<HealthComponent>(
           ComponentType.Health
         );
@@ -320,17 +317,23 @@ export class CombatSystem extends GameSystem {
             }
 
             // Move towards the target (use callback for lockstep)
-            this.requestMove(attacker.id, targetTransform.visualPosition.clone());
+            this.requestMove(
+              attacker.id,
+              targetTransform.visualPosition.clone()
+            );
 
             // Notify that movement started for animation sync
             const animCompMove = attacker.getComponent<AnimationComponent>(
               ComponentType.Animation
             );
             if (animCompMove) {
-              this.eventBus.emit<NotifyMovementStartedEvent>(GameEvents.NOTIFY_MOVEMENT_STARTED, {
-                ...createEvent(),
-                entityId: attacker.id,
-              });
+              this.eventBus.emit<NotifyMovementStartedEvent>(
+                GameEvents.NOTIFY_MOVEMENT_STARTED,
+                {
+                  ...createEvent(),
+                  entityId: attacker.id,
+                }
+              );
             }
           }
         }
@@ -345,9 +348,8 @@ export class CombatSystem extends GameSystem {
           }
         }
       } else if (aggroTarget && movement) {
-        const aggroTargetTransform = aggroTarget.getComponent<TransformComponent>(
-          ComponentType.Transform
-        );
+        const aggroTargetTransform =
+          aggroTarget.getComponent<TransformComponent>(ComponentType.Transform);
         if (!aggroTargetTransform) continue;
 
         // Aggro target exists but is out of range - move towards them
@@ -377,21 +379,30 @@ export class CombatSystem extends GameSystem {
             !movement.isMoving
           ) {
             // If not moving, store current position as fallback
-            this.storedMoveTargets.set(attacker.id, attackerTransform.visualPosition.clone());
+            this.storedMoveTargets.set(
+              attacker.id,
+              attackerTransform.visualPosition.clone()
+            );
           }
 
           // Move towards the aggro target (use callback for lockstep)
-          this.requestMove(attacker.id, aggroTargetTransform.visualPosition.clone());
+          this.requestMove(
+            attacker.id,
+            aggroTargetTransform.visualPosition.clone()
+          );
 
           // Notify that movement started for animation sync
           const animCompAggro = attacker.getComponent<AnimationComponent>(
             ComponentType.Animation
           );
           if (animCompAggro) {
-            this.eventBus.emit<NotifyMovementStartedEvent>(GameEvents.NOTIFY_MOVEMENT_STARTED, {
-              ...createEvent(),
-              entityId: attacker.id,
-            });
+            this.eventBus.emit<NotifyMovementStartedEvent>(
+              GameEvents.NOTIFY_MOVEMENT_STARTED,
+              {
+                ...createEvent(),
+                entityId: attacker.id,
+              }
+            );
           }
         } else if (isAttackLockedAggro && movement.isMoving) {
           // Stop movement if attacking
@@ -434,10 +445,13 @@ export class CombatSystem extends GameSystem {
           this.storedMoveTargets.delete(attacker.id);
 
           // Orient entity along movement direction
-          this.eventBus.emit<OrientToMovementDirectionEvent>(GameEvents.ORIENT_TO_MOVEMENT_DIRECTION, {
-            ...createEvent(),
-            entityId: attacker.id,
-          });
+          this.eventBus.emit<OrientToMovementDirectionEvent>(
+            GameEvents.ORIENT_TO_MOVEMENT_DIRECTION,
+            {
+              ...createEvent(),
+              entityId: attacker.id,
+            }
+          );
         }
       }
     }
@@ -554,7 +568,10 @@ export class CombatSystem extends GameSystem {
           FP.Lt(distanceSq, FP.Sub(closestDistanceSq!, FP_DISTANCE_EPSILON_SQ));
         const isSameDistance =
           !isFirstTarget &&
-          FP.Lte(FP.Abs(FP.Sub(distanceSq, closestDistanceSq!)), FP_DISTANCE_EPSILON_SQ);
+          FP.Lte(
+            FP.Abs(FP.Sub(distanceSq, closestDistanceSq!)),
+            FP_DISTANCE_EPSILON_SQ
+          );
         const hasLowerIdTieBreak =
           isSameDistance &&
           (closestTarget === null || potential.id < closestTarget.id);
@@ -635,10 +652,13 @@ export class CombatSystem extends GameSystem {
 
     if (animComp) {
       // Emit event for attack animation - damage already applied above
-      this.eventBus.emit<PlayAttackAnimationEvent>(GameEvents.PLAY_ATTACK_ANIMATION, {
-        ...createEvent(),
-        entityId: attacker.id,
-      });
+      this.eventBus.emit<PlayAttackAnimationEvent>(
+        GameEvents.PLAY_ATTACK_ANIMATION,
+        {
+          ...createEvent(),
+          entityId: attacker.id,
+        }
+      );
     }
 
     if (attackLockComp) {
@@ -656,8 +676,12 @@ export class CombatSystem extends GameSystem {
     team: TeamComponent,
     damage: number
   ): void {
-    const attackerTransform = attacker.getComponent<TransformComponent>(ComponentType.Transform);
-    const targetTransform = target.getComponent<TransformComponent>(ComponentType.Transform);
+    const attackerTransform = attacker.getComponent<TransformComponent>(
+      ComponentType.Transform
+    );
+    const targetTransform = target.getComponent<TransformComponent>(
+      ComponentType.Transform
+    );
     if (!attackerTransform || !targetTransform) return;
 
     // Calculate origin and direction (special handling for towers with rotating turrets)
@@ -686,7 +710,6 @@ export class CombatSystem extends GameSystem {
       sourceId: attacker.id,
     });
   }
-
 
   /**
    * Frame-based update for visual elements

@@ -98,7 +98,9 @@ export class RotationSystem extends GameSystem {
 
     // Calculate rotation step: sign(diff) * min(abs(diff), maxRotation)
     const fpAbsDiff = FP.Abs(fpDiff);
-    const fpStepMagnitude = FP.Lt(fpAbsDiff, fpMaxRotation) ? fpAbsDiff : fpMaxRotation;
+    const fpStepMagnitude = FP.Lt(fpAbsDiff, fpMaxRotation)
+      ? fpAbsDiff
+      : fpMaxRotation;
     const fpRotationStep = FP.Gt(fpDiff, FP._0)
       ? fpStepMagnitude
       : FP.Neg(fpStepMagnitude);

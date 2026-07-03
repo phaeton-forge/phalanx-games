@@ -52,7 +52,8 @@ export class Tower extends Unit {
   // Turret rotation tracking (VISUAL - frame-rate dependent)
   private _currentTargetPosition: Vector3 | null = null;
   private _turretRotationSpeed: number = 4.0; // Radians per second
-  // @ts-ignore
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-expect-error
   private _isAimedAtTarget: boolean = false;
   private _aimThreshold: number = 0.1; // Radians - how close to target angle to start firing
 
@@ -309,7 +310,6 @@ export class Tower extends Unit {
     this.rangeIndicator.material = material;
   }
 
-
   // Debug methods
   public get debug(): boolean {
     return this._debug;
@@ -377,8 +377,10 @@ export class Tower extends Unit {
     this._simTargetAngle = Math.atan2(targetDir.x, targetDir.z);
 
     // Normalize current angle to -PI to PI
-    while (this._simCurrentAngle > Math.PI) this._simCurrentAngle -= Math.PI * 2;
-    while (this._simCurrentAngle < -Math.PI) this._simCurrentAngle += Math.PI * 2;
+    while (this._simCurrentAngle > Math.PI)
+      this._simCurrentAngle -= Math.PI * 2;
+    while (this._simCurrentAngle < -Math.PI)
+      this._simCurrentAngle += Math.PI * 2;
 
     // Calculate angle difference
     let angleDiff = this._simTargetAngle - this._simCurrentAngle;

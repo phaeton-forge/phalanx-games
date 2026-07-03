@@ -62,7 +62,9 @@ export class AnimationSystem extends GameSystem {
       (event) => {
         const entity = this.entityManager.getEntity(event.entityId);
         if (!entity) return;
-        const anim = entity.getComponent<AnimationComponent>(ComponentType.Animation);
+        const anim = entity.getComponent<AnimationComponent>(
+          ComponentType.Animation
+        );
         if (anim) {
           this.playAttackAnimation(anim);
         }
@@ -75,7 +77,9 @@ export class AnimationSystem extends GameSystem {
       (event) => {
         const entity = this.entityManager.getEntity(event.entityId);
         if (!entity) return;
-        const anim = entity.getComponent<AnimationComponent>(ComponentType.Animation);
+        const anim = entity.getComponent<AnimationComponent>(
+          ComponentType.Animation
+        );
         if (anim) {
           this.playDeathAnimationVisualOnly(anim);
         }
@@ -86,7 +90,8 @@ export class AnimationSystem extends GameSystem {
     this.subscribe<ShowBloodEffectEvent>(
       GameEvents.SHOW_BLOOD_EFFECT,
       (event) => {
-        const entity = this.entityManager.getEntity(event.entityId) as Unit | undefined;
+        const entity = this.entityManager.getEntity(event.entityId) as
+          Unit | undefined;
         if (entity) {
           this.showBloodEffect(entity);
         }
@@ -97,7 +102,8 @@ export class AnimationSystem extends GameSystem {
     this.subscribe<OrientToTargetEvent>(
       GameEvents.ORIENT_TO_TARGET,
       (event) => {
-        const entity = this.entityManager.getEntity(event.entityId) as Unit | undefined;
+        const entity = this.entityManager.getEntity(event.entityId) as
+          Unit | undefined;
         if (entity) {
           this.orientToTarget(entity, event.targetPosition);
         }
@@ -110,7 +116,9 @@ export class AnimationSystem extends GameSystem {
       (event) => {
         const entity = this.entityManager.getEntity(event.entityId);
         if (!entity) return;
-        const anim = entity.getComponent<AnimationComponent>(ComponentType.Animation);
+        const anim = entity.getComponent<AnimationComponent>(
+          ComponentType.Animation
+        );
         if (anim) {
           this.notifyMovementStarted(anim);
         }
@@ -118,23 +126,23 @@ export class AnimationSystem extends GameSystem {
     );
 
     // End combat mode for entity
-    this.subscribe<EndCombatEvent>(
-      GameEvents.END_COMBAT,
-      (event) => {
-        const entity = this.entityManager.getEntity(event.entityId);
-        if (!entity) return;
-        const anim = entity.getComponent<AnimationComponent>(ComponentType.Animation);
-        if (anim) {
-          this.endCombat(anim);
-        }
+    this.subscribe<EndCombatEvent>(GameEvents.END_COMBAT, (event) => {
+      const entity = this.entityManager.getEntity(event.entityId);
+      if (!entity) return;
+      const anim = entity.getComponent<AnimationComponent>(
+        ComponentType.Animation
+      );
+      if (anim) {
+        this.endCombat(anim);
       }
-    );
+    });
 
     // Orient entity to movement direction
     this.subscribe<OrientToMovementDirectionEvent>(
       GameEvents.ORIENT_TO_MOVEMENT_DIRECTION,
       (event) => {
-        const entity = this.entityManager.getEntity(event.entityId) as Unit | undefined;
+        const entity = this.entityManager.getEntity(event.entityId) as
+          Unit | undefined;
         if (entity) {
           this.orientToMovementDirection(entity);
         }
@@ -279,7 +287,6 @@ export class AnimationSystem extends GameSystem {
     return true;
   }
 
-
   /**
    * Play death animation for visual effect only
    *
@@ -327,7 +334,6 @@ export class AnimationSystem extends GameSystem {
       });
     }
   }
-
 
   /**
    * Stop all animations immediately
@@ -406,7 +412,9 @@ export class AnimationSystem extends GameSystem {
    * Show blood effect at entity position
    */
   public showBloodEffect(entity: Unit): void {
-    const transform = entity.getComponent<TransformComponent>(ComponentType.Transform);
+    const transform = entity.getComponent<TransformComponent>(
+      ComponentType.Transform
+    );
     const position = transform?.visualPosition.clone() ?? new Vector3();
     position.y += 1; // Blood at chest height
     new BloodEffect(this.scene, position);
@@ -421,7 +429,9 @@ export class AnimationSystem extends GameSystem {
     );
     if (!rotation || !rotation.transformNode) return;
 
-    const transform = entity.getComponent<TransformComponent>(ComponentType.Transform);
+    const transform = entity.getComponent<TransformComponent>(
+      ComponentType.Transform
+    );
     if (!transform) return;
 
     // Calculate direction from entity to target

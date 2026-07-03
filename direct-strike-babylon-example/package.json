@@ -9,7 +9,8 @@
     "build:local": "tsc && vite build",
     "build:dev": "tsc && vite build --mode development",
     "preview": "vite preview",
-    "deploy": "node yc_bucket_deploy.mjs"
+    "deploy": "node yc_bucket_deploy.mjs",
+    "format": "prettier --write \"**/*.{ts,tsx,json,md}\""
   },
   "dependencies": {
     "@babylonjs/core": "8.53.0",

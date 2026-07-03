@@ -2,7 +2,11 @@ import type { SystemContext } from '@phalanx-engine/ecs';
 import { GameSystem } from '@phalanx-engine/ecs';
 import { GameEvents, createEvent } from '../events';
 import { TeamTag } from '../enums/TeamTag';
-import { ComponentType, TeamComponent, TransformComponent } from '../components';
+import {
+  ComponentType,
+  TeamComponent,
+  TransformComponent,
+} from '../components';
 import { arenaParams, resourceConfig } from '../config/constants';
 import type {
   AggressionBonusActivatedEvent,
@@ -97,7 +101,9 @@ export class TerritorySystem extends GameSystem {
       // Only count mobile units (not bases or towers)
       if (!entity.hasComponent(ComponentType.Movement)) continue;
 
-      const transform = entity.getComponent<TransformComponent>(ComponentType.Transform);
+      const transform = entity.getComponent<TransformComponent>(
+        ComponentType.Transform
+      );
       if (!transform) continue;
 
       const data = teamData.get(teamComponent.team);
@@ -172,7 +178,8 @@ export class TerritorySystem extends GameSystem {
           team,
           bonusMultiplier: resourceConfig.aggressionBonusMultiplier,
         }
-      );    } else if (!shouldHaveBonus && state.hasAggressionBonus) {
+      );
+    } else if (!shouldHaveBonus && state.hasAggressionBonus) {
       state.hasAggressionBonus = false;
       this.eventBus.emit<AggressionBonusDeactivatedEvent>(
         GameEvents.AGGRESSION_BONUS_DEACTIVATED,

@@ -7,7 +7,11 @@ import type { MutantUnit, MutantUnitConfig } from '../entities/MutantUnit';
 import type { Tower, TowerConfig } from '../entities/Tower';
 import type { Base, BaseConfig } from '../entities/Base';
 import { PhysicsBodyComponent } from '@phalanx-engine/physics';
-import { HealthBarComponent, InterpolationComponent, TransformComponent } from '../components';
+import {
+  HealthBarComponent,
+  InterpolationComponent,
+  TransformComponent,
+} from '../components';
 import { FP, FPVector3 } from '@phalanx-engine/math';
 import { TeamTag } from '../enums/TeamTag';
 import { arenaParams, unitConfig } from '../config/constants';
@@ -27,14 +31,10 @@ export class EntityFactory {
   // Map entity IDs to player info
   private entityOwnership: Map<number, string> = new Map();
 
-  constructor(
-    sceneManager: SceneManager,
-    entityManager: EntityManager,
-  ) {
+  constructor(sceneManager: SceneManager, entityManager: EntityManager) {
     this.sceneManager = sceneManager;
     this.entityManager = entityManager;
   }
-
 
   /**
    * Create a PrismaUnit and register it with all necessary systems
@@ -46,11 +46,13 @@ export class EntityFactory {
     const unit = this.sceneManager.createPrismaUnit(config, position);
 
     // Add PhysicsBodyComponent - prisma units are larger dynamic bodies
-    unit.addComponent(new PhysicsBodyComponent(unit.id, {
-      radius: FP.FromFloat(1.8), // Larger radius for 2x2 unit
-      mass: FP.FromFloat(2.0), // Heavier unit
-      isStatic: false,
-    }));
+    unit.addComponent(
+      new PhysicsBodyComponent(unit.id, {
+        radius: FP.FromFloat(1.8), // Larger radius for 2x2 unit
+        mass: FP.FromFloat(2.0), // Heavier unit
+        isStatic: false,
+      })
+    );
 
     // Add HealthBarComponent for health visualization
     unit.addComponent(new HealthBarComponent(3.5));
@@ -79,11 +81,13 @@ export class EntityFactory {
     const unit = this.sceneManager.createLanceUnit(config, position);
 
     // Add PhysicsBodyComponent - lance units are elongated 1x2 bodies
-    unit.addComponent(new PhysicsBodyComponent(unit.id, {
-      radius: FP.FromFloat(1.4), // Medium radius for 1x2 unit
-      mass: FP.FromFloat(1.5), // Between sphere and prisma
-      isStatic: false,
-    }));
+    unit.addComponent(
+      new PhysicsBodyComponent(unit.id, {
+        radius: FP.FromFloat(1.4), // Medium radius for 1x2 unit
+        mass: FP.FromFloat(1.5), // Between sphere and prisma
+        isStatic: false,
+      })
+    );
 
     // Add HealthBarComponent for health visualization
     unit.addComponent(new HealthBarComponent(3.0));
@@ -112,11 +116,13 @@ export class EntityFactory {
     const unit = this.sceneManager.createMutantUnit(config, position);
 
     // Add PhysicsBodyComponent - mutant units are 2x2 bodies
-    unit.addComponent(new PhysicsBodyComponent(unit.id, {
-      radius: FP.FromFloat(2.0),
-      mass: FP.FromFloat(2.0),
-      isStatic: false,
-    }));
+    unit.addComponent(
+      new PhysicsBodyComponent(unit.id, {
+        radius: FP.FromFloat(2.0),
+        mass: FP.FromFloat(2.0),
+        isStatic: false,
+      })
+    );
 
     // Add HealthBarComponent for health visualization
     unit.addComponent(new HealthBarComponent(4.5));
@@ -142,11 +148,13 @@ export class EntityFactory {
     const tower = this.sceneManager.createTower(config, position);
 
     // Add PhysicsBodyComponent - towers are static bodies (can push but don't move)
-    tower.addComponent(new PhysicsBodyComponent(tower.id, {
-      radius: FP.FromFloat(1.5),
-      mass: FP.FromFloat(10.0),
-      isStatic: true,
-    }));
+    tower.addComponent(
+      new PhysicsBodyComponent(tower.id, {
+        radius: FP.FromFloat(1.5),
+        mass: FP.FromFloat(10.0),
+        isStatic: true,
+      })
+    );
 
     // Add HealthBarComponent for health visualization
     tower.addComponent(new HealthBarComponent(5.0));
@@ -172,11 +180,13 @@ export class EntityFactory {
     const base = this.sceneManager.createBase(config, position);
 
     // Add PhysicsBodyComponent - bases are static bodies (can push but don't move)
-    base.addComponent(new PhysicsBodyComponent(base.id, {
-      radius: FP.FromFloat(3.0),
-      mass: FP.FromFloat(100.0),
-      isStatic: true,
-    }));
+    base.addComponent(
+      new PhysicsBodyComponent(base.id, {
+        radius: FP.FromFloat(3.0),
+        mass: FP.FromFloat(100.0),
+        isStatic: true,
+      })
+    );
 
     // Add HealthBarComponent for health visualization
     base.addComponent(new HealthBarComponent(5.5));

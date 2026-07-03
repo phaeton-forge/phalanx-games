@@ -1,8 +1,13 @@
 import { Engine, Scene } from '@babylonjs/core';
 import { GameWorld } from '@phalanx-engine/ecs';
-import type { SoASchemaDefinition, SoAComponentStore, CommandsBatch } from '@phalanx-engine/ecs';
+import type { CommandsBatch } from '@phalanx-engine/ecs';
 import { ProjectileEntity } from '../entities/ProjectileEntity';
-import { ProjectileComponent, TeamComponent, InterpolationComponent, TransformSoASchema } from '../components';
+import {
+  ProjectileComponent,
+  TeamComponent,
+  InterpolationComponent,
+  TransformSoASchema,
+} from '../components';
 import { LockstepManager } from './LockstepManager';
 import { EntityFactory } from './EntityFactory';
 import { UIManager } from './UIManager';
@@ -127,18 +132,24 @@ export class Game {
       debug: debugPanelEnabled,
       debugPanelConfig: debugPanelEnabled
         ? {
-          toggleKey: 'Backquote',
-        }
+            toggleKey: 'Backquote',
+          }
         : undefined,
       pooling: {
         entityTypes: {
-          'projectile': {
+          projectile: {
             factory: () => new ProjectileEntity(),
             pool: { initialSize: 50, maxSize: 200 },
             components: [
-              { type: ComponentType.Projectile, factory: () => new ProjectileComponent() },
+              {
+                type: ComponentType.Projectile,
+                factory: () => new ProjectileComponent(),
+              },
               { type: ComponentType.Team, factory: () => new TeamComponent() },
-              { type: ComponentType.Interpolation, factory: () => new InterpolationComponent() },
+              {
+                type: ComponentType.Interpolation,
+                factory: () => new InterpolationComponent(),
+              },
             ],
           },
         },
@@ -146,9 +157,7 @@ export class Game {
     });
 
     // Create scene manager (not a GameSystem, but needed by other systems)
-    this.sceneManager = new SceneManager(
-      this.scene,
-    );
+    this.sceneManager = new SceneManager(this.scene);
 
     // Create all gameplay systems (core simulation systems)
     this.movementSystem = new MovementSystem();
@@ -166,23 +175,29 @@ export class Game {
     // Wire game-specific collision filter:
     // Skip collisions between units and friendly buildings (same-team static entities)
     const entityManager = this.world.entityManager;
-    this.physicsWorld.setCollisionFilter((entityIdA: number, entityIdB: number) => {
-      const eA = entityManager.getEntity(entityIdA);
-      const eB = entityManager.getEntity(entityIdB);
-      if (!eA || !eB) return false;
+    this.physicsWorld.setCollisionFilter(
+      (entityIdA: number, entityIdB: number) => {
+        const eA = entityManager.getEntity(entityIdA);
+        const eB = entityManager.getEntity(entityIdB);
+        if (!eA || !eB) return false;
 
-      const bodyA = eA.getComponent<import('@phalanx-engine/physics').PhysicsBodyComponent>(ComponentType.PhysicsBody);
-      const bodyB = eB.getComponent<import('@phalanx-engine/physics').PhysicsBodyComponent>(ComponentType.PhysicsBody);
+        const bodyA = eA.getComponent<
+          import('@phalanx-engine/physics').PhysicsBodyComponent
+        >(ComponentType.PhysicsBody);
+        const bodyB = eB.getComponent<
+          import('@phalanx-engine/physics').PhysicsBodyComponent
+        >(ComponentType.PhysicsBody);
 
-      if ((bodyA?.isStatic || bodyB?.isStatic)) {
-        const teamA = eA.getComponent<TeamComponent>(ComponentType.Team);
-        const teamB = eB.getComponent<TeamComponent>(ComponentType.Team);
-        if (teamA && teamB && teamA.team === teamB.team) {
-          return false; // skip same-team static collisions
+        if (bodyA?.isStatic || bodyB?.isStatic) {
+          const teamA = eA.getComponent<TeamComponent>(ComponentType.Team);
+          const teamB = eB.getComponent<TeamComponent>(ComponentType.Team);
+          if (teamA && teamB && teamA.team === teamB.team) {
+            return false; // skip same-team static collisions
+          }
         }
+        return true;
       }
-      return true;
-    });
+    );
 
     this.healthSystem = new HealthSystem();
     this.projectileSystem = new ProjectileSystem(this.scene);
@@ -261,7 +276,7 @@ export class Game {
     // Phase 1: Initialize entity factory
     this.entityFactory = new EntityFactory(
       this.sceneManager,
-      this.world.entityManager,
+      this.world.entityManager
     );
 
     // Phase 2: Initialize UI manager (decoupled from systems, uses EventBus)
@@ -299,12 +314,12 @@ export class Game {
     this.cameraController = new CameraController(this.scene, this.localTeam);
 
     // Setup "Switch To Base" button (needs cameraController)
-    this.uiManager.setupBaseButton(() => this.cameraController.focusOnFormationGrid());
+    this.uiManager.setupBaseButton(() =>
+      this.cameraController.focusOnFormationGrid()
+    );
 
     // Set late systems in initializer
-    this.gameInitializer.setLateSystems(
-      this.cameraController
-    );
+    this.gameInitializer.setLateSystems(this.cameraController);
 
     // Phase 7: Create lockstep manager (needs all systems)
     this.lockstepManager = this.createLockstepManager();
@@ -338,7 +353,8 @@ export class Game {
         eventBus: this.world.eventBus,
       },
       {
-        onCleanupNeeded: () => this.entityCleanupService.cleanupDestroyedEntities(),
+        onCleanupNeeded: () =>
+          this.entityCleanupService.cleanupDestroyedEntities(),
         onNotification: (msg, type) =>
           this.uiManager.showNotification(msg, type),
         // Formation UI updates now happen via UI_FORMATION_UPDATED events
@@ -396,17 +412,16 @@ export class Game {
       beforeTick: (tick: number, commandsBatch: CommandsBatch) => {
         // Link transform store to physics on first tick
         if (tick === 0) {
-          const txStore = this.world.entityManager.getOrCreateSoAStore(TransformSoASchema);
-          this.physicsWorld.setTransformStore(
-            txStore as unknown as SoAComponentStore<SoASchemaDefinition>,
-            {
-              fpPositionX: 'fpPositionX',
-              fpPositionY: 'fpPositionY',
-              fpPositionZ: 'fpPositionZ',
-              visualPositionX: 'visualPositionX',
-              visualPositionZ: 'visualPositionZ',
-            },
-          );
+          const txStore =
+            this.world.entityManager.getOrCreateSoAStore(TransformSoASchema);
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+          this.physicsWorld.setTransformStore(txStore, {
+            fpPositionX: 'fpPositionX',
+            fpPositionY: 'fpPositionY',
+            fpPositionZ: 'fpPositionZ',
+            visualPositionX: 'visualPositionX',
+            visualPositionZ: 'visualPositionZ',
+          });
         }
 
         // Snapshot positions before simulation
@@ -493,9 +508,7 @@ export class Game {
   /**
    * Handle unit button click
    */
-  private handleUnitButtonClick(
-    unitType: 'mutant' | 'prisma' | 'lance'
-  ): void {
+  private handleUnitButtonClick(unitType: 'mutant' | 'prisma' | 'lance'): void {
     this.uiManager.setActiveUnitButton(unitType);
     this.formationGridSystem.enterPlacementMode(
       this.matchData.playerId,
@@ -503,13 +516,11 @@ export class Game {
     );
   }
 
-
   private setupResizeHandler(): void {
     window.addEventListener('resize', () => {
       this.engine.resize();
     });
   }
-
 
   /**
    * Cleanup resources

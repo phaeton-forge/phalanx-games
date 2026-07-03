@@ -21,7 +21,6 @@ export const GameEvents = {
   MOVE_COMPLETED: 'movement:moveCompleted',
   STOP_REQUESTED: 'movement:stopRequested',
 
-
   // Input events
   LEFT_CLICK: 'input:leftClick',
   RIGHT_CLICK: 'input:rightClick',

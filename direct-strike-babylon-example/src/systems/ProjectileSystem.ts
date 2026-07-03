@@ -102,13 +102,22 @@ export class ProjectileSystem extends GameSystem {
 
     if (this.pools) {
       // Pool path: acquire from pool, reinitialize template components
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call
       entity = this.pools.acquire<ProjectileEntity>('projectile');
       entity.initVisual(this.scene, origin, direction, config.team);
 
       // Template components are guaranteed to be attached after acquire
-      entity.getComponent<ProjectileComponent>(ComponentType.Projectile)!
-        .reinitialize(fpDirection, fpSpeed, config.damage, remainingTicks, config.sourceId);
-      entity.getComponent<TeamComponent>(ComponentType.Team)!
+      entity
+        .getComponent<ProjectileComponent>(ComponentType.Projectile)!
+        .reinitialize(
+          fpDirection,
+          fpSpeed,
+          config.damage,
+          remainingTicks,
+          config.sourceId
+        );
+      entity
+        .getComponent<TeamComponent>(ComponentType.Team)!
         .reinitialize(config.team);
 
       // SoA components: always allocate new (data lives in typed arrays)
@@ -117,21 +126,29 @@ export class ProjectileSystem extends GameSystem {
       entity.addComponent(transform);
 
       // Interpolation is a template component — reinitialize in-place
-      entity.getComponent<InterpolationComponent>(ComponentType.Interpolation)!
+      entity
+        .getComponent<InterpolationComponent>(ComponentType.Interpolation)!
         .reinitialize(transform.fpPosition, false);
 
       // Register with EntityManager
       this.entityManager.addEntity(entity);
 
       // Snap so the first frame doesn't blend from (0,0,0)
-      entity.getComponent<InterpolationComponent>(ComponentType.Interpolation)!
+      entity
+        .getComponent<InterpolationComponent>(ComponentType.Interpolation)!
         .snapToPosition(transform.fpPosition);
     } else {
       // Fallback: create new entity without pooling
       entity = new ProjectileEntity();
       entity.initVisual(this.scene, origin, direction, config.team);
       entity.addComponent(
-        new ProjectileComponent(fpDirection, fpSpeed, config.damage, remainingTicks, config.sourceId)
+        new ProjectileComponent(
+          fpDirection,
+          fpSpeed,
+          config.damage,
+          remainingTicks,
+          config.sourceId
+        )
       );
       entity.addComponent(new TeamComponent(config.team));
 
@@ -139,7 +156,10 @@ export class ProjectileSystem extends GameSystem {
       const transform = new TransformComponent(entity.id, initialFpPos);
       entity.addComponent(transform);
 
-      const interpolation = new InterpolationComponent(transform.fpPosition, false);
+      const interpolation = new InterpolationComponent(
+        transform.fpPosition,
+        false
+      );
       entity.addComponent(interpolation);
 
       // Register with EntityManager
@@ -156,7 +176,9 @@ export class ProjectileSystem extends GameSystem {
    * Process one network tick — deterministic projectile update
    */
   public override processTick(_tick: number): void {
-    const projectileEntities = this.entityManager.queryEntities(ComponentType.Projectile);
+    const projectileEntities = this.entityManager.queryEntities(
+      ComponentType.Projectile
+    );
     if (projectileEntities.length === 0) return;
 
     // Get all potential targets (entities with Health + Team + Transform)
@@ -169,8 +191,12 @@ export class ProjectileSystem extends GameSystem {
     for (const entity of projectileEntities) {
       if (entity.isDestroyed) continue;
 
-      const projectile = entity.getComponent<ProjectileComponent>(ComponentType.Projectile)!;
-      const transform = entity.getComponent<TransformComponent>(ComponentType.Transform)!;
+      const projectile = entity.getComponent<ProjectileComponent>(
+        ComponentType.Projectile
+      )!;
+      const transform = entity.getComponent<TransformComponent>(
+        ComponentType.Transform
+      )!;
       const team = entity.getComponent<TeamComponent>(ComponentType.Team)!;
 
       // Decrement tick-based lifetime
@@ -193,19 +219,29 @@ export class ProjectileSystem extends GameSystem {
         // Don't collide with projectile entities
         if (target.hasComponent(ComponentType.Projectile)) continue;
 
-        const targetTeam = target.getComponent<TeamComponent>(ComponentType.Team)!;
+        const targetTeam = target.getComponent<TeamComponent>(
+          ComponentType.Team
+        )!;
         if (targetTeam.team === team.team) continue;
 
-        const targetTransform = target.getComponent<TransformComponent>(ComponentType.Transform)!;
-        const distanceSq = FPVector3.SqrDistance(transform.fpPosition, targetTransform.fpPosition);
+        const targetTransform = target.getComponent<TransformComponent>(
+          ComponentType.Transform
+        )!;
+        const distanceSq = FPVector3.SqrDistance(
+          transform.fpPosition,
+          targetTransform.fpPosition
+        );
 
         if (FP.Lt(distanceSq, FP_HIT_RADIUS_SQ)) {
-          this.eventBus.emit<DamageRequestedEvent>(GameEvents.DAMAGE_REQUESTED, {
-            ...createEvent(),
-            entityId: target.id,
-            amount: projectile.damage,
-            sourceId: projectile.sourceId,
-          });
+          this.eventBus.emit<DamageRequestedEvent>(
+            GameEvents.DAMAGE_REQUESTED,
+            {
+              ...createEvent(),
+              entityId: target.id,
+              amount: projectile.damage,
+              sourceId: projectile.sourceId,
+            }
+          );
 
           // Reuse scratch vector — event bus dispatches synchronously
           const floatPos = FPVector3.ToFloat(transform.fpPosition);
@@ -230,7 +266,6 @@ export class ProjectileSystem extends GameSystem {
       // can register hits before being destroyed)
       if (FP.Lte(transform.fpPosition.y, FP_GROUND_LEVEL)) {
         this.destroyProjectile(entity, transform);
-        continue;
       }
     }
   }
@@ -238,7 +273,10 @@ export class ProjectileSystem extends GameSystem {
   /**
    * Create explosion effect and mark entity for cleanup
    */
-  private destroyProjectile(entity: Entity, transform: TransformComponent): void {
+  private destroyProjectile(
+    entity: Entity,
+    transform: TransformComponent
+  ): void {
     const floatPos = FPVector3.ToFloat(transform.fpPosition);
     this._scratchPos.set(floatPos.x, floatPos.y, floatPos.z);
     new ExplosionEffect(this.scene, this._scratchPos);
@@ -249,7 +287,9 @@ export class ProjectileSystem extends GameSystem {
    * Clear all projectile entities
    */
   public clear(): void {
-    const projectileEntities = this.entityManager.queryEntities(ComponentType.Projectile);
+    const projectileEntities = this.entityManager.queryEntities(
+      ComponentType.Projectile
+    );
     for (const entity of projectileEntities) {
       entity.destroy();
     }

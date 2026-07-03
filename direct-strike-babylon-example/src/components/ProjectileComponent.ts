@@ -1,6 +1,9 @@
 import { ComponentType } from './Component';
 import type { IResettableComponent } from '@phalanx-engine/ecs';
-import type { FPVector3 as FPVector3Type, FixedPoint } from '@phalanx-engine/math';
+import type {
+  FPVector3 as FPVector3Type,
+  FixedPoint,
+} from '@phalanx-engine/math';
 import { FP } from '@phalanx-engine/math';
 
 /**

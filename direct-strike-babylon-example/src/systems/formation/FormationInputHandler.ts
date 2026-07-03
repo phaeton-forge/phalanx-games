@@ -512,7 +512,8 @@ export class FormationInputHandler {
         playerId,
         unitType,
       }
-    );  }
+    );
+  }
 
   /**
    * Exit placement mode

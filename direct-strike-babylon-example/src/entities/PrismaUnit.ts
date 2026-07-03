@@ -229,7 +229,6 @@ export class PrismaUnit extends Unit {
     return mesh;
   }
 
-
   private createRangeIndicator(): void {
     const attack = this.getComponent<AttackComponent>(ComponentType.Attack);
     if (!attack) return;

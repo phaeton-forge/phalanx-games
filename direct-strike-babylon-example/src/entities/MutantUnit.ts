@@ -244,7 +244,6 @@ export class MutantUnit extends Unit {
     this.rangeIndicator.material = material;
   }
 
-
   public override dispose(): void {
     if (this.rangeIndicator) {
       this.rangeIndicator.dispose();

@@ -22,4 +22,3 @@ export class HealthBarComponent implements IComponent {
     return this._heightOffset;
   }
 }
-

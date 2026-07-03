@@ -23,10 +23,18 @@ export class InterpolationComponent implements IResettableComponent {
   public readonly type = ComponentType.Interpolation;
 
   /** Fixed-point position from previous simulation tick (authoritative) */
-  public readonly previousFpPosition: FPVector3Type = { x: FP._0, y: FP._0, z: FP._0 };
+  public readonly previousFpPosition: FPVector3Type = {
+    x: FP._0,
+    y: FP._0,
+    z: FP._0,
+  };
 
   /** Fixed-point position from current simulation tick (authoritative) */
-  public readonly currentFpPosition: FPVector3Type = { x: FP._0, y: FP._0, z: FP._0 };
+  public readonly currentFpPosition: FPVector3Type = {
+    x: FP._0,
+    y: FP._0,
+    z: FP._0,
+  };
 
   /** Visual position applied to mesh (interpolated, for rendering) */
   public readonly visualPosition: Vector3 = new Vector3();
@@ -54,7 +62,10 @@ export class InterpolationComponent implements IResettableComponent {
   }
 
   /** IResettableComponent: reinitialize with a spawn position */
-  public reinitialize(initialPosition: FPVector3Type, isStatic: boolean = false): void {
+  public reinitialize(
+    initialPosition: FPVector3Type,
+    isStatic: boolean = false
+  ): void {
     this._copyToAll(initialPosition);
     this.active = !isStatic;
   }
@@ -101,5 +112,3 @@ export class InterpolationComponent implements IResettableComponent {
     this.visualPosition.z = FP.ToFloat(fpPosition.z);
   }
 }
-
-

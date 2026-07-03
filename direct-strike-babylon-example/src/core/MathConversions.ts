@@ -159,7 +159,10 @@ export function fpToVector2Ref(fp: FPVector2Type, out: Vector2): Vector2 {
  * @param y - Y coordinate to use (default: 0)
  * @returns New Babylon Vector3 with (fp.x, y, fp.y)
  */
-export function fpVector2ToVector3XZ(fp: FPVector2Type, y: number = 0): Vector3 {
+export function fpVector2ToVector3XZ(
+  fp: FPVector2Type,
+  y: number = 0
+): Vector3 {
   const floats = FPVector2.ToFloat(fp);
   return new Vector3(floats.x, y, floats.y);
 }
@@ -172,7 +175,10 @@ export function fpVector2ToVector3XZ(fp: FPVector2Type, y: number = 0): Vector3 
  * @param z - Z coordinate to use (default: 0)
  * @returns New Babylon Vector3 with (fp.x, fp.y, z)
  */
-export function fpVector2ToVector3XY(fp: FPVector2Type, z: number = 0): Vector3 {
+export function fpVector2ToVector3XY(
+  fp: FPVector2Type,
+  z: number = 0
+): Vector3 {
   const floats = FPVector2.ToFloat(fp);
   return new Vector3(floats.x, floats.y, z);
 }
@@ -273,4 +279,3 @@ export function fpToNumber(fp: ReturnType<typeof FP.FromFloat>): number {
 export function numberToFp(n: number): ReturnType<typeof FP.FromFloat> {
   return FP.FromFloat(n);
 }
-

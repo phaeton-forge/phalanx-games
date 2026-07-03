@@ -106,7 +106,6 @@ export interface StopRequestedEvent extends GameEvent {
   entityId: number;
 }
 
-
 // ============================================
 // Input Events
 // ============================================
@@ -384,4 +383,3 @@ export interface EndCombatEvent extends GameEvent {
 export interface OrientToMovementDirectionEvent extends GameEvent {
   entityId: number;
 }
-

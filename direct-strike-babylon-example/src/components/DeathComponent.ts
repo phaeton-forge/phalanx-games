@@ -33,7 +33,9 @@ export class DeathComponent implements IComponent {
    */
   constructor(deathDurationSeconds: number = 1.5) {
     // Convert seconds to ticks for deterministic timing
-    this.deathDurationTicks = Math.ceil(deathDurationSeconds * networkConfig.tickRate);
+    this.deathDurationTicks = Math.ceil(
+      deathDurationSeconds * networkConfig.tickRate
+    );
   }
 
   /**
@@ -56,7 +58,7 @@ export class DeathComponent implements IComponent {
    */
   public shouldCompleteThisTick(currentTick: number): boolean {
     if (!this.isDying) return false;
-    return (currentTick - this.deathStartTick) >= this.deathDurationTicks;
+    return currentTick - this.deathStartTick >= this.deathDurationTicks;
   }
 
   /**
@@ -75,7 +77,9 @@ export class DeathComponent implements IComponent {
    */
   public getRemainingTicks(currentTick: number): number {
     if (!this.isDying) return 0;
-    return Math.max(0, this.deathDurationTicks - (currentTick - this.deathStartTick));
+    return Math.max(
+      0,
+      this.deathDurationTicks - (currentTick - this.deathStartTick)
+    );
   }
 }
-

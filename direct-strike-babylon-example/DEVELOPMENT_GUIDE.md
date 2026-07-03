@@ -75,18 +75,18 @@ This project uses a **component-based Entity-Component-System (ECS)** architectu
 
 ### Core Classes (SRP)
 
-| Class                    | Responsibility                                          |
-| ------------------------ | ------------------------------------------------------- |
-| `Game`                   | Thin orchestrator, coordinates initialization           |
-| `GameWorld`              | ECS facade (systems, entities, events, tick/frame loop) |
-| `SystemContext`          | Shared dependencies container for all systems           |
-| `GameEventCoordinator`   | Game event subscriptions (victory, territory, waves)    |
-| `GameInitializer`        | World setup, entity creation, asset preloading          |
-| `EntityCleanupService`   | Destroyed entity cleanup and disposal                   |
-| `AssetManager`           | 3D model preloading and instancing                      |
-| `LockstepManager`        | Deterministic command execution                         |
-| `EntityFactory`          | Entity creation with ownership tracking                 |
-| `UIManager`              | UI updates, notifications, pause/resume, and drag interactions |
+| Class                  | Responsibility                                                 |
+| ---------------------- | -------------------------------------------------------------- |
+| `Game`                 | Thin orchestrator, coordinates initialization                  |
+| `GameWorld`            | ECS facade (systems, entities, events, tick/frame loop)        |
+| `SystemContext`        | Shared dependencies container for all systems                  |
+| `GameEventCoordinator` | Game event subscriptions (victory, territory, waves)           |
+| `GameInitializer`      | World setup, entity creation, asset preloading                 |
+| `EntityCleanupService` | Destroyed entity cleanup and disposal                          |
+| `AssetManager`         | 3D model preloading and instancing                             |
+| `LockstepManager`      | Deterministic command execution                                |
+| `EntityFactory`        | Entity creation with ownership tracking                        |
+| `UIManager`            | UI updates, notifications, pause/resume, and drag interactions |
 
 ### Key Principles
 
@@ -132,12 +132,12 @@ This ensures all clients see the exact same game state at all times.
 
 ### Key Components
 
-| Component             | Location           | Purpose                                     |
-| --------------------- | ------------------ | ------------------------------------------- |
-| `PhalanxClient`       | phalanx-client     | Network connection, matchmaking, tick/frame |
-| `GameWorld`           | phalanx-ecs| ECS facade, automatic tick/frame loop       |
-| `LockstepManager`     | direct-strike      | Game-specific command execution              |
-| `InterpolationSystem` | direct-strike      | Smooth visual movement between ticks        |
+| Component             | Location       | Purpose                                     |
+| --------------------- | -------------- | ------------------------------------------- |
+| `PhalanxClient`       | phalanx-client | Network connection, matchmaking, tick/frame |
+| `GameWorld`           | phalanx-ecs    | ECS facade, automatic tick/frame loop       |
+| `LockstepManager`     | direct-strike  | Game-specific command execution             |
+| `InterpolationSystem` | direct-strike  | Smooth visual movement between ticks        |
 
 ### GameWorld Tick/Frame Loop
 
@@ -149,7 +149,7 @@ import { GameWorld } from '@phalanx-engine/ecs';
 // Create GameWorld with PhalanxClient as the tick/frame provider
 const world = new GameWorld({
   componentTypes: Object.values(ComponentType),
-  tickFrameProvider: client,  // PhalanxClient implements ITickFrameProvider
+  tickFrameProvider: client, // PhalanxClient implements ITickFrameProvider
 });
 
 // Register tick and frame systems
@@ -188,6 +188,7 @@ client.sendCommand('move', { entityId: 1, targetX: 10, targetZ: 20 });
 ```
 
 **Key Points:**
+
 - `world.start(hooks?)` — Starts the loop. All registered systems run automatically.
 - Tick systems (`processTick`) run at fixed rate (20 ticks/sec), deterministically
 - Frame systems (`update`) run every render frame
@@ -233,6 +234,7 @@ public cleanup(): void {
 ```
 
 **Key Points:**
+
 - Tick system processing is handled automatically by `GameWorld` — no manual `processAllTicks()` calls needed
 - `LockstepManager` focuses solely on deterministic command execution
 - Commands from **all players** are executed (no filtering)
@@ -265,18 +267,27 @@ Position is stored in `TransformComponent` (a SoA component), NOT on the entity 
 ```typescript
 // TransformComponent.ts - SoA-backed position (authoritative + visual)
 import { SoAComponent, defineSoASchema } from '@phalanx-engine/ecs';
-import { FP, FPVector3, type FPVector3 as FPVector3Type } from '@phalanx-engine/math';
+import {
+  FP,
+  FPVector3,
+  type FPVector3 as FPVector3Type,
+} from '@phalanx-engine/math';
 
-export const TransformSoASchema = defineSoASchema({
-  fpPositionX: 'i64',       // BigInt64Array — deterministic fixed-point
-  fpPositionY: 'i64',
-  fpPositionZ: 'i64',
-  visualPositionX: 'f64',   // Float64Array — for rendering
-  visualPositionY: 'f64',
-  visualPositionZ: 'f64',
-}, 'Transform');
+export const TransformSoASchema = defineSoASchema(
+  {
+    fpPositionX: 'i64', // BigInt64Array — deterministic fixed-point
+    fpPositionY: 'i64',
+    fpPositionZ: 'i64',
+    visualPositionX: 'f64', // Float64Array — for rendering
+    visualPositionY: 'f64',
+    visualPositionZ: 'f64',
+  },
+  'Transform'
+);
 
-export class TransformComponent extends SoAComponent<typeof TransformSoASchema.definition> {
+export class TransformComponent extends SoAComponent<
+  typeof TransformSoASchema.definition
+> {
   // Facade getter — reads from SoA store
   public get fpPosition(): FPVector3Type {
     const idx = this.getIndex();
@@ -308,9 +319,13 @@ export class Unit extends Entity implements IMeshEntity {
   protected mesh: Mesh | null = null;
 
   public setVisualPosition(value: Vector3): void {
-    if (this.mesh) { this.mesh.position.copyFrom(value); }
+    if (this.mesh) {
+      this.mesh.position.copyFrom(value);
+    }
   }
-  public getMesh(): Mesh | null { return this.mesh; }
+  public getMesh(): Mesh | null {
+    return this.mesh;
+  }
 }
 ```
 
@@ -386,7 +401,11 @@ interface NetworkMoveCommand extends PlayerCommand {
 // Place unit command
 interface NetworkPlaceUnitCommand extends PlayerCommand {
   type: 'placeUnit';
-  data: { unitType: 'sphere' | 'mutant' | 'prisma' | 'lance'; gridX: number; gridZ: number };
+  data: {
+    unitType: 'sphere' | 'mutant' | 'prisma' | 'lance';
+    gridX: number;
+    gridZ: number;
+  };
 }
 
 // Deploy units command
@@ -398,7 +417,12 @@ interface NetworkDeployUnitsCommand extends PlayerCommand {
 // Move grid unit command
 interface NetworkMoveGridUnitCommand extends PlayerCommand {
   type: 'moveGridUnit';
-  data: { fromGridX: number; fromGridZ: number; toGridX: number; toGridZ: number };
+  data: {
+    fromGridX: number;
+    fromGridZ: number;
+    toGridX: number;
+    toGridZ: number;
+  };
 }
 ```
 
@@ -475,19 +499,19 @@ this.lockstepManager.queueCommand({
 
 ### Key Files
 
-| File                                 | Purpose                                        |
-| ------------------------------------ | ---------------------------------------------- |
-| `src/scenes/LobbyScene.ts`           | Matchmaking UI and server connection           |
+| File                                 | Purpose                                                                      |
+| ------------------------------------ | ---------------------------------------------------------------------------- |
+| `src/scenes/LobbyScene.ts`           | Matchmaking UI and server connection                                         |
 | `src/config/constants.ts`            | Server URL, tick rate, spawn positions, unit costs, camera, resources, waves |
-| `src/core/Game.ts`                   | Thin orchestrator, coordinates all systems     |
-| `src/core/GameEventCoordinator.ts`   | Game event subscriptions (victory, waves)      |
-| `src/core/GameInitializer.ts`        | World setup and entity creation                |
-| `src/core/EntityCleanupService.ts`   | Destroyed entity cleanup                       |
-| `src/core/LockstepManager.ts`        | Deterministic command execution                |
-| `src/core/NetworkCommands.ts`        | Network command type definitions               |
-| `src/core/MathConversions.ts`        | Fixed-point ↔ Babylon.js vector conversions    |
-| `src/core/AssetManager.ts`           | 3D model preloading and instancing             |
-| `src/systems/InterpolationSystem.ts` | Smooth visual interpolation                    |
+| `src/core/Game.ts`                   | Thin orchestrator, coordinates all systems                                   |
+| `src/core/GameEventCoordinator.ts`   | Game event subscriptions (victory, waves)                                    |
+| `src/core/GameInitializer.ts`        | World setup and entity creation                                              |
+| `src/core/EntityCleanupService.ts`   | Destroyed entity cleanup                                                     |
+| `src/core/LockstepManager.ts`        | Deterministic command execution                                              |
+| `src/core/NetworkCommands.ts`        | Network command type definitions                                             |
+| `src/core/MathConversions.ts`        | Fixed-point ↔ Babylon.js vector conversions                                  |
+| `src/core/AssetManager.ts`           | 3D model preloading and instancing                                           |
+| `src/systems/InterpolationSystem.ts` | Smooth visual interpolation                                                  |
 
 ### Desync Detection
 
@@ -566,8 +590,7 @@ export class LockstepManager {
     hasher.addInt(tick);
 
     // Get all entities sorted by ID for deterministic ordering
-    const entities = entityManager.getAllEntities()
-      .sort((a, b) => a.id - b.id);
+    const entities = entityManager.getAllEntities().sort((a, b) => a.id - b.id);
 
     hasher.addInt(entities.length);
 
@@ -575,7 +598,8 @@ export class LockstepManager {
       hasher.addInt(entity.id);
 
       // Hash position via TransformComponent
-      const transform = entity.getComponent(ComponentType.Transform) as TransformComponent | undefined;
+      const transform = entity.getComponent(ComponentType.Transform) as
+        TransformComponent | undefined;
       if (transform) {
         const pos = transform.fpPosition;
         hasher.addFloat(FP.ToFloat(pos.x));
@@ -584,14 +608,16 @@ export class LockstepManager {
       }
 
       // Hash health (if has HealthComponent)
-      const health = entity.getComponent(ComponentType.Health) as HealthComponent | undefined;
+      const health = entity.getComponent(ComponentType.Health) as
+        HealthComponent | undefined;
       if (health) {
         hasher.addInt(health.health);
         hasher.addInt(health.maxHealth);
       }
 
       // Hash movement state (if has MovementComponent)
-      const movement = entity.getComponent(ComponentType.Movement) as MovementComponent | undefined;
+      const movement = entity.getComponent(ComponentType.Movement) as
+        MovementComponent | undefined;
       if (movement) {
         hasher.addBool(movement.isMoving);
         if (movement.isMoving) {
@@ -603,7 +629,8 @@ export class LockstepManager {
       }
 
       // Hash attack state (if has AttackComponent)
-      const attack = entity.getComponent(ComponentType.Attack) as AttackComponent | undefined;
+      const attack = entity.getComponent(ComponentType.Attack) as
+        AttackComponent | undefined;
       if (attack) {
         hasher.addFloat(attack.currentCooldown);
         hasher.addBool(attack.canAttack());
@@ -642,18 +669,20 @@ world.start({
 
 ```typescript
 // Good: Deterministic state via components
-const transform = entity.getComponent(ComponentType.Transform) as TransformComponent;
+const transform = entity.getComponent(
+  ComponentType.Transform
+) as TransformComponent;
 const fpPos = transform.fpPosition;
 hasher.addFloat(FP.ToFloat(fpPos.x)); // Fixed-point position (deterministic)
 hasher.addFloat(FP.ToFloat(fpPos.y));
 hasher.addFloat(FP.ToFloat(fpPos.z));
 const health = entity.getComponent(ComponentType.Health) as HealthComponent;
-hasher.addInt(health.health);            // Game state
-hasher.addInt(entity.targetId ?? -1);    // Nullable with default
+hasher.addInt(health.health); // Game state
+hasher.addInt(entity.targetId ?? -1); // Nullable with default
 
 // Bad: Non-deterministic state
-hasher.addFloat(Date.now());             // ❌ Time varies
-hasher.addFloat(Math.random());          // ❌ Random
+hasher.addFloat(Date.now()); // ❌ Time varies
+hasher.addFloat(Math.random()); // ❌ Random
 hasher.addFloat(entity.mesh.position.x); // ❌ Visual position (interpolated)
 // Use TransformComponent.fpPosition instead of visual position for hashing
 ```
@@ -717,22 +746,22 @@ Configure the Phalanx server for desync handling:
 ```typescript
 // Server configuration
 const phalanx = new Phalanx({
-  enableStateHashing: true,    // Enable hash comparison
-  stateHashInterval: 60,       // Server-side interval hint
+  enableStateHashing: true, // Enable hash comparison
+  stateHashInterval: 60, // Server-side interval hint
 
   desync: {
     enabled: true,
-    action: 'end-match',       // 'log-only' | 'end-match'
-    gracePeriodTicks: 1,       // Consecutive desyncs before action
+    action: 'end-match', // 'log-only' | 'end-match'
+    gracePeriodTicks: 1, // Consecutive desyncs before action
   },
 });
 ```
 
-| Option               | Description                              | Recommended      |
-| -------------------- | ---------------------------------------- | ---------------- |
-| `action: 'end-match'`| End match on confirmed desync            | Production       |
-| `action: 'log-only'` | Log desync but continue playing          | Development      |
-| `gracePeriodTicks`   | Allow N desyncs before taking action     | `1` (strict)     |
+| Option                | Description                          | Recommended  |
+| --------------------- | ------------------------------------ | ------------ |
+| `action: 'end-match'` | End match on confirmed desync        | Production   |
+| `action: 'log-only'`  | Log desync but continue playing      | Development  |
+| `gracePeriodTicks`    | Allow N desyncs before taking action | `1` (strict) |
 
 #### TODO: Integrate Desync Detection in Babylon-ECS
 
@@ -787,21 +816,21 @@ The `MathConversions.ts` utility provides functions to convert between `phalanx-
 
 ```typescript
 import {
-  fpToVector3,           // FPVector3 → Vector3 (allocates new)
-  fpToVector3Ref,        // FPVector3 → Vector3 (writes to existing, no allocation)
-  vector3ToFp,           // Vector3 → FPVector3 (for user input, initialization)
-  lerpVector3FromFp,     // Interpolate FPVector3 → Vector3 (allocates new)
-  lerpVector3FromFpRef,  // Interpolate FPVector3 → Vector3 (no allocation)
-  fpToVector2,           // FPVector2 → Vector2
-  fpToVector2Ref,        // FPVector2 → Vector2 (no allocation)
-  vector2ToFp,           // Vector2 → FPVector2
-  fpVector2ToVector3XZ,  // FPVector2 → Vector3 (on XZ plane)
-  fpVector2ToVector3XY,  // FPVector2 → Vector3 (on XY plane)
-  vector3XZToFpVector2,  // Vector3 XZ → FPVector2
-  lerpVector2FromFp,     // Interpolate FPVector2 → Vector2 (allocates new)
-  lerpVector2FromFpRef,  // Interpolate FPVector2 → Vector2 (no allocation)
-  fpToNumber,            // FixedPoint → number
-  numberToFp,            // number → FixedPoint
+  fpToVector3, // FPVector3 → Vector3 (allocates new)
+  fpToVector3Ref, // FPVector3 → Vector3 (writes to existing, no allocation)
+  vector3ToFp, // Vector3 → FPVector3 (for user input, initialization)
+  lerpVector3FromFp, // Interpolate FPVector3 → Vector3 (allocates new)
+  lerpVector3FromFpRef, // Interpolate FPVector3 → Vector3 (no allocation)
+  fpToVector2, // FPVector2 → Vector2
+  fpToVector2Ref, // FPVector2 → Vector2 (no allocation)
+  vector2ToFp, // Vector2 → FPVector2
+  fpVector2ToVector3XZ, // FPVector2 → Vector3 (on XZ plane)
+  fpVector2ToVector3XY, // FPVector2 → Vector3 (on XY plane)
+  vector3XZToFpVector2, // Vector3 XZ → FPVector2
+  lerpVector2FromFp, // Interpolate FPVector2 → Vector2 (allocates new)
+  lerpVector2FromFpRef, // Interpolate FPVector2 → Vector2 (no allocation)
+  fpToNumber, // FixedPoint → number
+  numberToFp, // number → FixedPoint
 } from './core/MathConversions';
 ```
 
@@ -809,7 +838,9 @@ import {
 
 ```typescript
 // Convert fixed-point position to Babylon Vector3 for rendering
-const transform = entity.getComponent<TransformComponent>(ComponentType.Transform)!;
+const transform = entity.getComponent<TransformComponent>(
+  ComponentType.Transform
+)!;
 const renderPos = fpToVector3(transform.fpPosition);
 
 // Interpolate between two fixed-point positions for smooth visuals (no allocation)
@@ -906,7 +937,8 @@ export interface IMeshEntity {
   getMesh(): Mesh | null;
 }
 ```
-```
+
+````
 
 **Existing Entities**:
 
@@ -960,7 +992,7 @@ export class HealthComponent implements IComponent {
   constructor(maxHealth: number = 100) { this._health = maxHealth; }
   public get health(): number { return this._health; }
 }
-```
+````
 
 #### SoA Components (SoAComponent)
 
@@ -972,9 +1004,9 @@ Components backed by contiguous typed arrays for cache-friendly hot-path iterati
 
 **Existing SoA components:**
 
-| Component              | Schema Fields                                                                  | Purpose                              |
-| ---------------------- | ------------------------------------------------------------------------------ | ------------------------------------ |
-| `TransformComponent`   | `fpPositionX/Y/Z` (`i64`), `visualPositionX/Y/Z` (`f64`)                      | Entity position (authoritative + visual) |
+| Component              | Schema Fields                                                                                                                                                      | Purpose                                          |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------ |
+| `TransformComponent`   | `fpPositionX/Y/Z` (`i64`), `visualPositionX/Y/Z` (`f64`)                                                                                                           | Entity position (authoritative + visual)         |
 | `PhysicsBodyComponent` | `velocityX/Y/Z` (`i64`), `radius` (`i64`), `mass` (`i64`), `restitution` (`i64`), `friction` (`i64`), `isStatic` (`u8`), `ignorePhysics` (`u8`), `lastX/Z` (`f64`) | Physics simulation data (from `phalanx-physics`) |
 
 **Example (custom SoA component):**
@@ -984,14 +1016,17 @@ import { SoAComponent, defineSoASchema } from '@phalanx-engine/ecs';
 import { FP } from '@phalanx-engine/math';
 
 // Define a schema — each field maps to a typed array
-const TransformSoASchema = defineSoASchema({
-  fpPositionX: 'i64',   // BigInt64Array — raw FixedPoint
-  fpPositionY: 'i64',
-  fpPositionZ: 'i64',
-  visualPositionX: 'f64', // Float64Array — visual cache
-  visualPositionY: 'f64',
-  visualPositionZ: 'f64',
-}, 'Transform');
+const TransformSoASchema = defineSoASchema(
+  {
+    fpPositionX: 'i64', // BigInt64Array — raw FixedPoint
+    fpPositionY: 'i64',
+    fpPositionZ: 'i64',
+    visualPositionX: 'f64', // Float64Array — visual cache
+    visualPositionY: 'f64',
+    visualPositionZ: 'f64',
+  },
+  'Transform'
+);
 ```
 
 > **Note:** `PhysicsBodyComponent` and `PhysicsSoASchema` are provided by the `phalanx-physics` package and re-exported from `components/index.ts`. You do not need to define them — just import and use them.
@@ -1011,13 +1046,17 @@ import { PhysicsSoASchema, TransformSoASchema } from '../components';
 class MovementSystem extends GameSystem {
   // Cache store references — resolved once
   private physicsStore!: SoAComponentStore<typeof PhysicsSoASchema.definition>;
-  private transformStore!: SoAComponentStore<typeof TransformSoASchema.definition>;
+  private transformStore!: SoAComponentStore<
+    typeof TransformSoASchema.definition
+  >;
 
   public override init(context: SystemContext): void {
     super.init(context);
     // getOrCreateSoAStore ensures the store exists even before entities are spawned
-    this.physicsStore = this.entityManager.getOrCreateSoAStore(PhysicsSoASchema);
-    this.transformStore = this.entityManager.getOrCreateSoAStore(TransformSoASchema);
+    this.physicsStore =
+      this.entityManager.getOrCreateSoAStore(PhysicsSoASchema);
+    this.transformStore =
+      this.entityManager.getOrCreateSoAStore(TransformSoASchema);
   }
 
   public override processTick(tick: number): void {
@@ -1036,14 +1075,20 @@ class MovementSystem extends GameSystem {
       if (!entity) continue;
 
       // AoS fallback — get movement target from IComponent
-      const movement = entity.getComponent<MovementComponent>(ComponentType.Movement);
+      const movement = entity.getComponent<MovementComponent>(
+        ComponentType.Movement
+      );
       if (movement?.isMoving) {
         // Cross-store lookup for position (to compute direction)
         const txIndex = this.transformStore.indexOf(entityId);
         if (txIndex === -1) continue;
 
-        const posX = FP.FromRaw(this.transformStore.arrays.fpPositionX[txIndex]);
-        const posZ = FP.FromRaw(this.transformStore.arrays.fpPositionZ[txIndex]);
+        const posX = FP.FromRaw(
+          this.transformStore.arrays.fpPositionX[txIndex]
+        );
+        const posZ = FP.FromRaw(
+          this.transformStore.arrays.fpPositionZ[txIndex]
+        );
         // ... compute direction, set velocity
         velocityX[physIndex] = FP.ToRaw(FP.Mul(dirX, speed));
         velocityZ[physIndex] = FP.ToRaw(FP.Mul(dirZ, speed));
@@ -1071,26 +1116,26 @@ See `MovementSystem.ts` for a complete real-world example of direct SoA access p
 
 #### SoA Field Types
 
-| Type   | TypedArray       | JS Value  | Use Case                                |
-| ------ | ---------------- | --------- | --------------------------------------- |
-| `f64`  | `Float64Array`   | `number`  | Floating-point values, visual positions |
-| `f32`  | `Float32Array`   | `number`  | Lower-precision floats                  |
-| `i32`  | `Int32Array`     | `number`  | Signed integers                         |
-| `u32`  | `Uint32Array`    | `number`  | Unsigned integers                       |
-| `u8`   | `Uint8Array`     | `number`  | Flags, booleans (0/1)                   |
-| `i64`  | `BigInt64Array`  | `bigint`  | Fixed-point raw values (deterministic)  |
+| Type  | TypedArray      | JS Value | Use Case                                |
+| ----- | --------------- | -------- | --------------------------------------- |
+| `f64` | `Float64Array`  | `number` | Floating-point values, visual positions |
+| `f32` | `Float32Array`  | `number` | Lower-precision floats                  |
+| `i32` | `Int32Array`    | `number` | Signed integers                         |
+| `u32` | `Uint32Array`   | `number` | Unsigned integers                       |
+| `u8`  | `Uint8Array`    | `number` | Flags, booleans (0/1)                   |
+| `i64` | `BigInt64Array` | `bigint` | Fixed-point raw values (deterministic)  |
 
 #### When to Choose Which
 
-| Criterion                        | IComponent           | SoAComponent         |
-| -------------------------------- | -------------------- | -------------------- |
-| Iterated every tick in hot loop  | ❌                    | ✅                    |
-| Hundreds/thousands of instances  | ❌                    | ✅                    |
-| Flat numeric fields              | Either               | ✅                    |
-| Complex/nested data              | ✅                    | ❌                    |
-| Few instances                    | ✅                    | ❌                    |
-| Needs deterministic i64 storage  | ❌                    | ✅                    |
-| Simple to implement              | ✅                    | Moderate              |
+| Criterion                       | IComponent | SoAComponent |
+| ------------------------------- | ---------- | ------------ |
+| Iterated every tick in hot loop | ❌         | ✅           |
+| Hundreds/thousands of instances | ❌         | ✅           |
+| Flat numeric fields             | Either     | ✅           |
+| Complex/nested data             | ✅         | ❌           |
+| Few instances                   | ✅         | ❌           |
+| Needs deterministic i64 storage | ❌         | ✅           |
+| Simple to implement             | ✅         | Moderate     |
 
 ---
 
@@ -1109,28 +1154,28 @@ Systems contain game logic and operate on entities with specific component combi
 ```typescript
 export abstract class GameSystem {
   protected context!: SystemContext;
-  
+
   // Convenience accessors
   protected get eventBus(): EventBus { return this.context.eventBus; }
   protected get entityManager(): EntityManager { return this.context.entityManager; }
-  
+
   public enabled: boolean = true;
-  
+
   // Called after all systems are created
   public init(context: SystemContext): void { ... }
-  
+
   // Deterministic tick-based logic (optional)
   public processTick(_tick: number): void { }
-  
+
   // Frame-based visual updates (optional)
   public update(_deltaTime: number): void { }
-  
+
   // Subscribe with automatic cleanup on dispose (returns unsubscribe function)
   protected subscribe<T>(event: string, handler: (event: T) => void): () => void { ... }
-  
+
   // Subscribe once with automatic cleanup
   protected subscribeOnce<T>(event: string, handler: (event: T) => void): () => void { ... }
-  
+
   // Concrete dispose - auto-unsubscribes all events. Override and call super.dispose()
   public dispose(): void { ... }
 }
@@ -1148,31 +1193,31 @@ if (movementSystem) {
 
 **Existing Systems**:
 
-| System                | Responsibility                         | Required Components  |
-| --------------------- | -------------------------------------- | -------------------- |
-| `CombatSystem`        | Target detection, attack logic         | Attack, Team, Health |
-| `MovementSystem`      | Set velocities for moving entities     | Movement, PhysicsBody |
-| `HealthSystem`        | Damage processing, entity destruction  | Health               |
-| `PhysicsSystem`       | Velocity integration (from `phalanx-physics`) | PhysicsBody, Transform |
-| `CollisionSystem`     | Collision detection & resolution (from `phalanx-physics`) | PhysicsBody, Transform |
-| `ProjectileSystem`    | Projectile movement and collision      | Projectile, Team, Transform |
-| `InterpolationSystem` | Smooth visual movement between ticks   | Interpolation        |
-| `ResourceSystem`      | Resource generation and spending       | -                    |
-| `TerritorySystem`     | Territory control and aggression bonus | Team                 |
-| `FormationGridSystem` | Unit placement grid                    | -                    |
-| `WaveSystem`          | Wave-based unit deployment             | -                    |
-| `VictorySystem`       | Win/lose conditions                    | -                    |
-| `AnimationSystem`     | 3D model animations                    | -                    |
-| `RotationSystem`      | Entity rotation toward movement        | Movement             |
-| `HealthBarSystem`     | Health bar rendering                   | HealthBar            |
+| System                | Responsibility                                            | Required Components         |
+| --------------------- | --------------------------------------------------------- | --------------------------- |
+| `CombatSystem`        | Target detection, attack logic                            | Attack, Team, Health        |
+| `MovementSystem`      | Set velocities for moving entities                        | Movement, PhysicsBody       |
+| `HealthSystem`        | Damage processing, entity destruction                     | Health                      |
+| `PhysicsSystem`       | Velocity integration (from `phalanx-physics`)             | PhysicsBody, Transform      |
+| `CollisionSystem`     | Collision detection & resolution (from `phalanx-physics`) | PhysicsBody, Transform      |
+| `ProjectileSystem`    | Projectile movement and collision                         | Projectile, Team, Transform |
+| `InterpolationSystem` | Smooth visual movement between ticks                      | Interpolation               |
+| `ResourceSystem`      | Resource generation and spending                          | -                           |
+| `TerritorySystem`     | Territory control and aggression bonus                    | Team                        |
+| `FormationGridSystem` | Unit placement grid                                       | -                           |
+| `WaveSystem`          | Wave-based unit deployment                                | -                           |
+| `VictorySystem`       | Win/lose conditions                                       | -                           |
+| `AnimationSystem`     | 3D model animations                                       | -                           |
+| `RotationSystem`      | Entity rotation toward movement                           | Movement                    |
+| `HealthBarSystem`     | Health bar rendering                                      | HealthBar                   |
 
 **Core Managers**:
 
-| Manager           | Responsibility                                     |
-| ----------------- | -------------------------------------------------- |
-| `LockstepManager` | Deterministic command execution                    |
-| `EntityFactory`   | Entity creation with ownership tracking            |
-| `UIManager`       | UI updates and notifications                       |
+| Manager           | Responsibility                          |
+| ----------------- | --------------------------------------- |
+| `LockstepManager` | Deterministic command execution         |
+| `EntityFactory`   | Entity creation with ownership tracking |
+| `UIManager`       | UI updates and notifications            |
 
 ---
 
@@ -1312,14 +1357,19 @@ import { SoAComponent, defineSoASchema } from '@phalanx-engine/ecs';
 import { ComponentType } from './Component';
 import { FP, type FixedPoint } from '@phalanx-engine/math';
 
-export const SteeringSoASchema = defineSoASchema({
-  desiredVelocityX: 'i64', // BigInt64Array for deterministic fixed-point
-  desiredVelocityZ: 'i64',
-  weight: 'f64',           // Float64Array for non-deterministic visual weight
-  isActive: 'u8',          // Uint8Array for boolean flag
-}, 'Steering');
+export const SteeringSoASchema = defineSoASchema(
+  {
+    desiredVelocityX: 'i64', // BigInt64Array for deterministic fixed-point
+    desiredVelocityZ: 'i64',
+    weight: 'f64', // Float64Array for non-deterministic visual weight
+    isActive: 'u8', // Uint8Array for boolean flag
+  },
+  'Steering'
+);
 
-export class SteeringComponent extends SoAComponent<typeof SteeringSoASchema.definition> {
+export class SteeringComponent extends SoAComponent<
+  typeof SteeringSoASchema.definition
+> {
   public readonly type = ComponentType.Steering;
   static readonly soaSchema = SteeringSoASchema;
 
@@ -1467,11 +1517,10 @@ export class BuffSystem extends GameSystem {
    */
   public init(context: SystemContext): void {
     super.init(context);
-    
+
     // Subscribe to events with automatic cleanup
-    this.subscribe<EntityDestroyedEvent>(
-      GameEvents.ENTITY_DESTROYED,
-      (event) => this.handleEntityDestroyed(event)
+    this.subscribe<EntityDestroyedEvent>(GameEvents.ENTITY_DESTROYED, (event) =>
+      this.handleEntityDestroyed(event)
     );
   }
 
@@ -1481,12 +1530,10 @@ export class BuffSystem extends GameSystem {
    */
   public processTick(tick: number): void {
     if (!this.enabled) return;
-    
+
     // Query entities with Buff component
-    const buffedEntities = this.entityManager.queryEntities(
-      ComponentType.Buff
-    );
-    
+    const buffedEntities = this.entityManager.queryEntities(ComponentType.Buff);
+
     for (const entity of buffedEntities) {
       // Process buff expiration, etc.
     }
@@ -1498,7 +1545,7 @@ export class BuffSystem extends GameSystem {
    */
   public update(deltaTime: number): void {
     if (!this.enabled) return;
-    
+
     // Update buff visual effects, particles, etc.
   }
 
@@ -1527,8 +1574,8 @@ const buffSystem = new BuffSystem();
 // Frame systems run every render frame
 // Both are called automatically when world.start() is called
 world.registerSystems(
-  [/* other tick systems */, buffSystem],  // tickSystems (if needed)
-  [/* other frame systems */, buffSystem]  // frameSystems (if needed)
+  [, /* other tick systems */ buffSystem], // tickSystems (if needed)
+  [, /* other frame systems */ buffSystem] // frameSystems (if needed)
 );
 ```
 

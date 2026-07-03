@@ -37,6 +37,7 @@ export const ComponentType = createComponentTypeRegistry({
 
 // Override PhysicsBody to use the canonical symbol from phalanx-physics
 // so that entity.getComponent(ComponentType.PhysicsBody) resolves correctly
-(ComponentType as Record<string, symbol>).PhysicsBody = PHYSICS_BODY_COMPONENT_TYPE;
+(ComponentType as Record<string, symbol>).PhysicsBody =
+  PHYSICS_BODY_COMPONENT_TYPE;
 
 export type ComponentTypeKey = keyof typeof ComponentType;

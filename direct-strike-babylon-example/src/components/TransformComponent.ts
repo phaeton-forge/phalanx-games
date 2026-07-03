@@ -1,6 +1,11 @@
 import { SoAComponent, defineSoASchema } from '@phalanx-engine/ecs';
 import { ComponentType } from './Component';
-import { FP, type FixedPoint, FPVector3, type FPVector3 as FPVector3Type } from '@phalanx-engine/math';
+import {
+  FP,
+  type FixedPoint,
+  FPVector3,
+  type FPVector3 as FPVector3Type,
+} from '@phalanx-engine/math';
 import { Vector3 } from '@babylonjs/core';
 
 /**
@@ -9,14 +14,17 @@ import { Vector3 } from '@babylonjs/core';
  * Stores authoritative positions as i64 (raw FixedPoint base values) for exact
  * deterministic round-trips. Visual positions remain f64 for rendering.
  */
-export const TransformSoASchema = defineSoASchema({
-  fpPositionX: 'i64',
-  fpPositionY: 'i64',
-  fpPositionZ: 'i64',
-  visualPositionX: 'f64',
-  visualPositionY: 'f64',
-  visualPositionZ: 'f64',
-}, 'Transform');
+export const TransformSoASchema = defineSoASchema(
+  {
+    fpPositionX: 'i64',
+    fpPositionY: 'i64',
+    fpPositionZ: 'i64',
+    visualPositionX: 'f64',
+    visualPositionY: 'f64',
+    visualPositionZ: 'f64',
+  },
+  'Transform'
+);
 
 /**
  * TransformComponent - Stores entity position and visual position
@@ -31,7 +39,9 @@ export const TransformSoASchema = defineSoASchema({
  * const rawX = store.arrays.fpPositionX[idx];
  * ```
  */
-export class TransformComponent extends SoAComponent<typeof TransformSoASchema.definition> {
+export class TransformComponent extends SoAComponent<
+  typeof TransformSoASchema.definition
+> {
   public readonly type = ComponentType.Transform;
   static readonly soaSchema = TransformSoASchema;
 
@@ -39,7 +49,11 @@ export class TransformComponent extends SoAComponent<typeof TransformSoASchema.d
   private readonly _visualPosition: Vector3 = new Vector3();
 
   /** Reusable FPVector3 for returning fp position without allocation */
-  private readonly _fpPosition: FPVector3Type = { x: FP._0, y: FP._0, z: FP._0 };
+  private readonly _fpPosition: FPVector3Type = {
+    x: FP._0,
+    y: FP._0,
+    z: FP._0,
+  };
 
   constructor(entityId: number, initialPosition?: FPVector3Type) {
     const pos = initialPosition ?? FPVector3.Zero;
@@ -57,12 +71,6 @@ export class TransformComponent extends SoAComponent<typeof TransformSoASchema.d
       visualPositionY: visualPos.y,
       visualPositionZ: visualPos.z,
     });
-
-    // DEBUG: trace store values after add
-    const idx = this.getIndex();
-    const storedRawX = this.store.arrays.fpPositionX[idx];
-    const roundTrip = FP.FromRaw(storedRawX);
-    console.log(`[Transform DEBUG] entity=${entityId} rawX=${rawX} (type=${typeof rawX}) storedRawX=${storedRawX} (type=${typeof storedRawX}) roundTrip=${FP.ToFloat(roundTrip)} visualX=${visualPos.x}`);
   }
 
   // ============ Fixed-Point Position (Authoritative) ============
@@ -74,7 +82,9 @@ export class TransformComponent extends SoAComponent<typeof TransformSoASchema.d
   public get fpPosition(): FPVector3Type {
     const idx = this.getIndex();
     if (idx === -1) {
-      console.warn(`[TransformComponent] fpPosition: getIndex returned -1 for entity=${this.entityId}`);
+      console.warn(
+        `[TransformComponent] fpPosition: getIndex returned -1 for entity=${this.entityId}`
+      );
       return this._fpPosition;
     }
 
@@ -162,9 +172,15 @@ export class TransformComponent extends SoAComponent<typeof TransformSoASchema.d
     const idx = this.getIndex();
     if (idx === -1) return;
 
-    this.store.arrays.visualPositionX[idx] = FP.ToFloat(FP.FromRaw(this.store.arrays.fpPositionX[idx]));
-    this.store.arrays.visualPositionY[idx] = FP.ToFloat(FP.FromRaw(this.store.arrays.fpPositionY[idx]));
-    this.store.arrays.visualPositionZ[idx] = FP.ToFloat(FP.FromRaw(this.store.arrays.fpPositionZ[idx]));
+    this.store.arrays.visualPositionX[idx] = FP.ToFloat(
+      FP.FromRaw(this.store.arrays.fpPositionX[idx])
+    );
+    this.store.arrays.visualPositionY[idx] = FP.ToFloat(
+      FP.FromRaw(this.store.arrays.fpPositionY[idx])
+    );
+    this.store.arrays.visualPositionZ[idx] = FP.ToFloat(
+      FP.FromRaw(this.store.arrays.fpPositionZ[idx])
+    );
   }
 
   // ============ Convenience Methods ============
