@@ -1,0 +1,38 @@
+{
+  "name": "direct-strike-babylon-example",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host --mode development",
+    "dev:prod": "vite --host --mode production",
+    "build:local": "tsc && vite build",
+    "build:dev": "tsc && vite build --mode development",
+    "preview": "vite preview",
+    "deploy": "node yc_bucket_deploy.mjs"
+  },
+  "dependencies": {
+    "@babylonjs/core": "8.53.0",
+    "@babylonjs/gui": "8.53.0",
+    "@babylonjs/loaders": "8.53.0",
+    "@phalanx-engine/client": "^0.1.4",
+    "@phalanx-engine/ecs": "^0.1.4",
+    "@phalanx-engine/math": "^0.1.4",
+    "@phalanx-engine/physics": "^0.1.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/phaeton-forge/phalanx-games.git",
+    "directory": "direct-strike-babylon-example"
+  },
+  "bugs": "https://github.com/phaeton-forge/phalanx-games/issues",
+  "homepage": "https://github.com/phaeton-forge/phalanx-games/tree/main/direct-strike-babylon-example#readme",
+  "devDependencies": {
+    "@aws-sdk/client-s3": "^3.705.0",
+    "@aws-sdk/lib-storage": "^3.705.0",
+    "dotenv": "^16.4.7",
+    "mime-types": "^3.0.2",
+    "typescript": "~5.9.3",
+    "vite": "8.0.5"
+  }
+}

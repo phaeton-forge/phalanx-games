@@ -1,0 +1,5 @@
+packages:
+  - 'chapaev'
+  - 'chapaev/server'
+  - 'arena-shooter'
+  - 'direct-strike-babylon-example'

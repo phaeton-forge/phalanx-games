@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# TypeScript compilation output (should not be committed)
+*.d.ts
+*.d.ts.map
+*.js
+*.js.map
+# Exception: keep config files that are meant to be JS
+!*.config.js
+!vite.config.js
+!eslint.config.js
+#
+# Some packages keep hand-written ambient type declarations in `src/`.
+!chapaev/src/globals.d.ts
+
+# WASM files copied to public folders (generated)
+public/wasm/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Secrets and credentials
+client_secret*.json
+*.pem
+*.key
+.mcp.json
+
+# Test coverage
+coverage/
+
+# User stories (internal documentation)
+user-stories/

@@ -1,0 +1,48 @@
+{
+  "name": "phalanx-games",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Games built with Phalanx Engine",
+  "type": "module",
+  "scripts": {
+    "build": "pnpm -r build",
+    "build:chapaev": "pnpm --filter chapaev build",
+    "build:chapaev-server": "pnpm --filter chapaev-server build",
+    "build:arena-shooter": "pnpm --filter arena-shooter build",
+    "build:direct-strike": "pnpm --filter direct-strike-babylon-example build:local",
+    "dev:chapaev": "pnpm --filter chapaev dev",
+    "dev:arena-shooter": "pnpm --filter arena-shooter dev",
+    "dev:direct-strike": "pnpm --filter direct-strike-babylon-example dev",
+    "preview:chapaev": "pnpm --filter chapaev preview",
+    "preview:arena-shooter": "pnpm --filter arena-shooter preview",
+    "preview:direct-strike": "pnpm --filter direct-strike-babylon-example preview",
+    "deploy:chapaev": "cd chapaev && pnpm run deploy",
+    "deploy:direct-strike": "cd direct-strike-babylon-example && pnpm run deploy",
+    "lint": "eslint . --ext .ts,.tsx",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix",
+    "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,json,md}\""
+  },
+  "keywords": [
+    "phalanx",
+    "games",
+    "multiplayer"
+  ],
+  "author": "",
+  "license": "MIT",
+  "packageManager": "pnpm@10.33.2+sha512.a90faf6feeab71ad6c6e57f94e0fe1a12f5dcc22cd754db40ae9593eb6a3e0b6b12e3540218bb37ae083404b1f2ce6db2a4121e979829b4aff94b99f49da1cf8",
+  "engines": {
+    "node": ">=24.0.0 <25.0.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["better-sqlite3"]
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "eslint": "^9.17.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.0",
+    "prettier": "^3.4.0",
+    "typescript-eslint": "^8.20.0"
+  }
+}
