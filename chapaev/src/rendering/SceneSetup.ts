@@ -6,6 +6,7 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { SMAAPass } from 'three/addons/postprocessing/SMAAPass.js';
 import {
   CAMERA_FOV,
   CAMERA_NEAR,
@@ -40,9 +41,11 @@ import {
   BLOOM_THRESHOLD,
   BLOOM_STRENGTH,
   BLOOM_RADIUS,
+  MAX_PIXEL_RATIO,
 } from '../config/constants.ts';
 import { assetManager } from './AssetManager.ts';
 import { BOARD_TEXTURES } from './AssetManifest.ts';
+import { setMaxAnisotropy, applyTextureQuality } from './textureQuality.ts';
 
 /**
  * Screen-space vignette: darkens the edges of the frame for a
@@ -99,8 +102,25 @@ export function setupScene(canvas: HTMLCanvasElement): SceneContext {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO));
   renderer.setSize(window.innerWidth, window.innerHeight);
+
+  // ── Diagnostics (mobile AA/pixelation investigation) ────────────
+  const isWebGL2 = renderer.capabilities.isWebGL2;
+  console.warn('[SceneSetup] Renderer diagnostics', {
+    devicePixelRatio: window.devicePixelRatio,
+    clampedPixelRatio: renderer.getPixelRatio(),
+    maxPixelRatioConfig: MAX_PIXEL_RATIO,
+    antialiasContextFlag: true,
+    isWebGL2,
+    maxSamples: renderer.capabilities.maxSamples,
+    maxAnisotropy: renderer.capabilities.getMaxAnisotropy(),
+  });
+
+  // Anisotropic filtering for every texture loaded from here on
+  // (board, checkers, table) — keeps edges sharp at grazing angles
+  // instead of blurring out, without disabling mipmapping.
+  setMaxAnisotropy(renderer.capabilities.getMaxAnisotropy());
 
   // ── Scene ────────────────────────────────────────────────────
   const scene = new THREE.Scene();
@@ -217,6 +237,7 @@ export function setupScene(canvas: HTMLCanvasElement): SceneContext {
     tex.wrapS = THREE.RepeatWrapping;
     tex.wrapT = THREE.RepeatWrapping;
     tex.repeat.set(tableRepeat, tableRepeat);
+    applyTextureQuality(tex);
   }
 
   const tableMat = new THREE.MeshStandardMaterial({
@@ -255,6 +276,7 @@ export function setupScene(canvas: HTMLCanvasElement): SceneContext {
   for (const tex of [borderColorTex, borderNormalTex, borderRoughTex]) {
     tex.wrapS = THREE.RepeatWrapping;
     tex.wrapT = THREE.RepeatWrapping;
+    applyTextureQuality(tex);
   }
 
   const borderMat = new THREE.MeshStandardMaterial({
@@ -307,13 +329,19 @@ export function setupScene(canvas: HTMLCanvasElement): SceneContext {
   }
 
   // ── Post-processing ──────────────────────────────────────────
-  // Use a multisample render target so antialiasing survives post-processing
-  const renderTarget = new THREE.WebGLRenderTarget(
-    window.innerWidth,
-    window.innerHeight,
-    { samples: Math.min(renderer.capabilities.maxSamples, 4) }
-  );
-  const composer = new EffectComposer(renderer, renderTarget);
+  // IMPORTANT: do NOT pass a custom `WebGLRenderTarget` to `EffectComposer`.
+  // When you do, three.js internally forces `composer._pixelRatio = 1`
+  // (see EffectComposer constructor), so the composer's internal render
+  // target — and everything drawn into it — ends up sized in CSS pixels
+  // instead of physical device pixels. On mobile (devicePixelRatio 2-3)
+  // this silently downscaled the whole scene, which then got stretched
+  // back up to fill the canvas via OutputPass — the actual source of the
+  // pixelation/aliasing seen on phones (desktop DPR is usually 1, hiding
+  // the bug). Letting EffectComposer create its own default target keeps
+  // it DPR-aware on every `composer.setSize()` call, and it already
+  // requests a 4x-multisampled target (MSAA is a no-op — silently
+  // ignored — on WebGL1 contexts, so no extra branching is needed here).
+  const composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
 
   // Bloom — makes emissive checker highlights glow
@@ -332,14 +360,26 @@ export function setupScene(canvas: HTMLCanvasElement): SceneContext {
 
   composer.addPass(new OutputPass());
 
+  // WebGL1 render targets can't be multisampled, so the MSAA above is a
+  // no-op there — add an SMAA edge-AA pass as a fallback so those devices
+  // still get smooth object edges. (No-op on WebGL2, where MSAA already
+  // handles it — keeps the desktop pipeline untouched.)
+  if (!isWebGL2) {
+    composer.addPass(new SMAAPass());
+  }
+
   // ── Resize handler ──────────────────────────────────────────
-  window.addEventListener('resize', () => {
+  function handleResize(): void {
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO));
     camera.aspect = window.innerWidth / window.innerHeight;
     applyAspectFov(camera);
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
     composer.setSize(window.innerWidth, window.innerHeight);
-  });
+  }
+
+  window.addEventListener('resize', handleResize);
+  window.addEventListener('orientationchange', handleResize);
 
   return { scene, camera, renderer, controls, composer };
 }

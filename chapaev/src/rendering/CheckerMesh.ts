@@ -20,6 +20,7 @@ import {
   BRIGHT_CHECKER_TEXTURES,
   DARK_CHECKER_TEXTURES,
 } from './AssetManifest.ts';
+import { applyTextureQuality } from './textureQuality.ts';
 
 /** Shared geometry – created once and reused for every checker */
 let sharedGeometry: THREE.LatheGeometry | null = null;
@@ -83,6 +84,9 @@ function getCheckerMaterial(team: TeamTag): THREE.MeshStandardMaterial {
     colorTex.colorSpace = THREE.SRGBColorSpace;
     const normalTex = assetManager.getTexture(BRIGHT_CHECKER_TEXTURES.normal);
     const roughTex = assetManager.getTexture(BRIGHT_CHECKER_TEXTURES.roughness);
+    applyTextureQuality(colorTex);
+    applyTextureQuality(normalTex);
+    applyTextureQuality(roughTex);
 
     const mat = new THREE.MeshStandardMaterial({
       map: colorTex,
@@ -102,6 +106,9 @@ function getCheckerMaterial(team: TeamTag): THREE.MeshStandardMaterial {
   colorTex.colorSpace = THREE.SRGBColorSpace;
   const normalTex = assetManager.getTexture(DARK_CHECKER_TEXTURES.normal);
   const roughTex = assetManager.getTexture(DARK_CHECKER_TEXTURES.roughness);
+  applyTextureQuality(colorTex);
+  applyTextureQuality(normalTex);
+  applyTextureQuality(roughTex);
 
   const mat = new THREE.MeshStandardMaterial({
     map: colorTex,

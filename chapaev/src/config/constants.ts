@@ -29,6 +29,15 @@ export const CHECKER_BEVEL_SEGMENTS = 8;
 /** Number of checkers per team */
 export const CHECKERS_PER_TEAM = 8;
 
+// ── Rendering quality ─────────────────────────────────────────────
+/**
+ * Upper bound for `renderer.setPixelRatio`. Never use raw
+ * `window.devicePixelRatio` directly — uncapped DPR (3+ on many phones)
+ * tanks fill-rate/FPS for little visible benefit. Tune here if profiling
+ * shows headroom (e.g. drop to 1.5 on low-end Android).
+ */
+export const MAX_PIXEL_RATIO = 2;
+
 // ── Camera ────────────────────────────────────────────────────────
 export const CAMERA_FOV = 70;
 export const CAMERA_NEAR = 0.1;
@@ -36,11 +45,11 @@ export const CAMERA_FAR = 100;
 export const CAMERA_POSITION = { x: 0, y: 10, z: 8 } as const;
 export const CAMERA_MIN_DISTANCE = 6;
 export const CAMERA_MAX_DISTANCE = 25;
-export const CAMERA_MIN_POLAR_ANGLE = 0.2;             // rad – don't go below the board
-export const CAMERA_MAX_POLAR_ANGLE = Math.PI / 2.2;   // rad – slight limit
+export const CAMERA_MIN_POLAR_ANGLE = 0.2; // rad – don't go below the board
+export const CAMERA_MAX_POLAR_ANGLE = Math.PI / 2.2; // rad – slight limit
 
 // ── Lighting ──────────────────────────────────────────────────────
-export const DIR_LIGHT_COLOR = 0xfff4e0;   // warm white
+export const DIR_LIGHT_COLOR = 0xfff4e0; // warm white
 export const DIR_LIGHT_INTENSITY = 17.5;
 export const AMBIENT_LIGHT_COLOR = 0xaa9480;
 export const AMBIENT_LIGHT_INTENSITY = 1.0;
@@ -57,7 +66,7 @@ export const FILL_LIGHT_INTENSITY = 3.0;
 /** Board deck frame — smooth but not glossy */
 export const BOARD_ROUGHNESS = 0.85;
 export const BOARD_METALNESS = 0.0;
-export const BOARD_FRAME_COLOR = 0x4a3728;   // darker tint to distinguish from table
+export const BOARD_FRAME_COLOR = 0x4a3728; // darker tint to distinguish from table
 /** Board square surface — matte, non-reflective wood */
 export const BOARD_SQUARE_ROUGHNESS = 0.92;
 export const BOARD_SQUARE_METALNESS = 0.0;
@@ -128,7 +137,8 @@ export const HALO_PULSE_AMPLITUDE = 0.2;
 /** Speed of the breathing pulse (radians / second) */
 export const HALO_PULSE_SPEED = 2.5;
 /** Normalised inner radius where glow starts to fade (ratio of checker vs disc) */
-export const HALO_INNER_RATIO = CHECKER_RADIUS / (CHECKER_RADIUS + 0.25) * 0.5;
+export const HALO_INNER_RATIO =
+  (CHECKER_RADIUS / (CHECKER_RADIUS + 0.25)) * 0.5;
 /** Falloff exponent — higher = tighter glow around the checker edge */
 export const HALO_FALLOFF = 2.0;
 
@@ -177,7 +187,8 @@ function generateStartingPositions(): InitialCheckerPosition[] {
   return positions;
 }
 
-export const INITIAL_POSITIONS: readonly InitialCheckerPosition[] = generateStartingPositions();
+export const INITIAL_POSITIONS: readonly InitialCheckerPosition[] =
+  generateStartingPositions();
 
 // ── Physics ───────────────────────────────────────────────────────
 /** Simulation tick rate (ticks per second) */
@@ -244,4 +255,3 @@ export const ROOM_CONFIG = {
   codeTTLMs: 5 * 60 * 1000,
   codeLength: 6,
 } as const;
-

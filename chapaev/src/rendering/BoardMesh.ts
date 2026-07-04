@@ -16,6 +16,7 @@ import {
 } from '../config/constants.ts';
 import { assetManager } from './AssetManager.ts';
 import { DECK_TEXTURES, BOARD_TEXTURES } from './AssetManifest.ts';
+import { applyTextureQuality } from './textureQuality.ts';
 
 /**
  * Creates the board mesh group: a base box + 64 square tiles on top.
@@ -33,6 +34,9 @@ export function createBoardMesh(): THREE.Group {
   setRepeat(deckColorTex, 2, 2);
   setRepeat(deckNormalTex, 2, 2);
   setRepeat(deckRoughTex, 2, 2);
+  applyTextureQuality(deckColorTex);
+  applyTextureQuality(deckNormalTex);
+  applyTextureQuality(deckRoughTex);
 
   const deckMat = new THREE.MeshStandardMaterial({
     map: deckColorTex,
@@ -57,6 +61,9 @@ export function createBoardMesh(): THREE.Group {
   boardTex.colorSpace = THREE.SRGBColorSpace;
   const boardNormal = assetManager.getTexture(BOARD_TEXTURES.normal);
   const boardRough = assetManager.getTexture(BOARD_TEXTURES.roughness);
+  applyTextureQuality(boardTex);
+  applyTextureQuality(boardNormal);
+  applyTextureQuality(boardRough);
 
   const squareGeo = new THREE.PlaneGeometry(CELL_SIZE * 0.98, CELL_SIZE * 0.98);
 
