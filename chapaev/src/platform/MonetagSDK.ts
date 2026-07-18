@@ -21,8 +21,26 @@
 
 const MONETAG_LOADER_SRC = '//libtl.com/sdk.js';
 const MONETAG_SCRIPT_ID = 'monetag-sdk';
+const MONETAG_INPAGE_SCRIPT_ID = 'monetag-inpage-pushes';
+const MONETAG_INPAGE_LOADER_SRC = 'https://nap5k.com/tag.min.js';
 
 let loaderPromise: Promise<void> | null = null;
+
+/**
+ * Inject the Monetag in-page pushes tag exactly once (standalone web only).
+ * Runs on Monetag's own schedule — no explicit show call is required.
+ */
+export function loadMonetagInPagePushes(zoneId: string): void {
+  if (document.getElementById(MONETAG_INPAGE_SCRIPT_ID)) return;
+
+  const script = document.createElement('script');
+  script.id = MONETAG_INPAGE_SCRIPT_ID;
+  script.dataset.zone = zoneId;
+  script.src = MONETAG_INPAGE_LOADER_SRC;
+
+  const parent = [document.documentElement, document.body].filter(Boolean).pop();
+  parent?.appendChild(script);
+}
 
 /**
  * Inject the Monetag loader script exactly once. The script defines the

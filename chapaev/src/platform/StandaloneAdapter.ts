@@ -10,6 +10,7 @@ import {
   defaultInviteShareUrl,
   consumeUrlRoomCode,
 } from './platformUtils.ts';
+import { loadMonetagInPagePushes } from './MonetagSDK.ts';
 
 const ZERO_INSETS: SafeAreaInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const GUEST_ID_KEY = 'chapaev_guest_id';
@@ -50,6 +51,16 @@ export class StandaloneAdapter implements PlatformAdapter {
 
   async init(): Promise<void> {
     this.userId = this.loadOrCreateUserId();
+
+    if (this.platform === 'standalone') {
+      const inPageZoneId = (
+        (import.meta.env['VITE_MONETAG_INPAGE_ZONE_ID'] as string | undefined) ??
+        '11342750'
+      ).trim();
+      if (inPageZoneId.length > 0) {
+        loadMonetagInPagePushes(inPageZoneId);
+      }
+    }
 
     // Forward visibility changes to onResume subscribers.
     this.visibilityHandler = () => {
