@@ -113,7 +113,12 @@ export class Game {
     }
 
     this.bootstrapOnlineCollaborators();
-    this.menuPresenter.startAutoRotate();
+    // Resolve `firstFrameRendered` as soon as the menu scene paints its first
+    // frame — this is what triggers `adapter.ready()` (and Yandex
+    // `LoadingAPI.ready()`). Without this, `ready()` would only fire once an
+    // actual match starts, leaving the Yandex host stuck "waiting for ready"
+    // on the main menu.
+    this.menuPresenter.startAutoRotate(() => this.resolveFirstFrame());
 
     const roomCode = this.consumeDeepLinkRoomCode();
 

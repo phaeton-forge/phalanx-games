@@ -22,7 +22,7 @@ export class MenuScenePresenter {
 
   constructor(private readonly sceneCtx: SceneContext) {}
 
-  startAutoRotate(): void {
+  startAutoRotate(onFirstFrame?: () => void): void {
     const { controls, render } = this.sceneCtx;
 
     controls.enabled = false;
@@ -31,9 +31,14 @@ export class MenuScenePresenter {
 
     this.addDecorations();
 
+    let firstFrameNotified = false;
     const animate = (): void => {
       controls.update();
       render();
+      if (!firstFrameNotified) {
+        firstFrameNotified = true;
+        onFirstFrame?.();
+      }
       this.rafHandle = requestAnimationFrame(animate);
     };
     this.rafHandle = requestAnimationFrame(animate);
