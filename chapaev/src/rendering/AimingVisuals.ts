@@ -12,8 +12,10 @@ const SECTOR_MAX_ANGLE_RAD = THREE.MathUtils.degToRad(70);
 const SECTOR_MIN_RADIUS = 0.9;
 const SECTOR_MAX_RADIUS = 4.2;
 
+// Reduced by 15% from the original 0.3 / 1.9 Hz — the arrow wobble felt
+// slightly too fast.
 const OSC_MIN_HZ = 0.3;
-const OSC_MAX_HZ = 1.9;
+const OSC_MAX_HZ = 1.6;
 
 /**
  * AimingVisuals — draws a directional arrow from the flicked checker

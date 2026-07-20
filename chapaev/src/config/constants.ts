@@ -217,8 +217,8 @@ export const BOARD_HALF_EXTENT = BOARD_EXTENT / 2;
  */
 export const BOARD_ELIM_HALF_EXTENT = BOARD_HALF_EXTENT + BOARD_RIM_WIDTH;
 
-/** Multiplier converting drag-pixel distance to flick force */
-export const FLICK_FORCE_MULTIPLIER = 8.0;
+/** Multiplier converting drag-pixel distance to flick force (increased 10% for a punchier flick) */
+export const FLICK_FORCE_MULTIPLIER = 10;
 
 // ── Round transition ──────────────────────────────────────────────
 /** Delay (in ticks) between round_over and the next round starting */
