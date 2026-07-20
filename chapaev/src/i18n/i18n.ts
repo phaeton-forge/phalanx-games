@@ -125,6 +125,9 @@ const dictionaries: Record<Language, Dict> = {
     'name.whiteTeam': 'White',
     'name.blackTeam': 'Black',
     'name.ai': 'AI',
+
+    // Common
+    'common.loading': 'Loading…',
   },
   ru: {
     // Main menu
@@ -259,13 +262,19 @@ const dictionaries: Record<Language, Dict> = {
     'name.whiteTeam': 'Белые',
     'name.blackTeam': 'Чёрные',
     'name.ai': 'ИИ',
+
+    // Common
+    'common.loading': 'Загрузка…',
   },
 };
 
 let currentLanguage: Language | null = null;
 
 function detectLanguage(): Language {
-  const nav = (typeof navigator !== 'undefined' && navigator.language) ? navigator.language : 'en';
+  const nav =
+    typeof navigator !== 'undefined' && navigator.language
+      ? navigator.language
+      : 'en';
   const lang = nav.toLowerCase();
   return lang.startsWith('ru') ? 'ru' : 'en';
 }
@@ -294,7 +303,10 @@ export function setLanguage(lang: Language): void {
   }
 }
 
-export function t(key: string, params?: Record<string, string | number>): string {
+export function t(
+  key: string,
+  params?: Record<string, string | number>
+): string {
   const lang = getLanguage();
   const dict = dictionaries[lang];
   const fallback = dictionaries.en;
@@ -305,4 +317,3 @@ export function t(key: string, params?: Record<string, string | number>): string
     return v === undefined || v === null ? `{${name}}` : String(v);
   });
 }
-

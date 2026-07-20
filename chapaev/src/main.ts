@@ -79,6 +79,10 @@ async function bootstrap(): Promise<void> {
     }
   }
 
+  // Initialise the platform SDK (loads the Yandex/Telegram/etc. SDK and
+  // detects language). This does NOT signal "ready" to the platform — the
+  // Yandex `LoadingAPI.ready()` call lives in `adapter.ready()`, which is
+  // fired only after asset preloading + the first frame render (see below).
   await adapter.init();
 
   // ── i18n ──────────────────────────────────────────────────────────

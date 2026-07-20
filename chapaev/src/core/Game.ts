@@ -471,11 +471,11 @@ export class Game {
           }
     );
 
-    const { composer, controls } = this.sceneCtx;
+    const { render, controls } = this.sceneCtx;
     world.start({
       afterFrame: () => {
         controls.update();
-        composer.render();
+        render();
         this.resolveFirstFrame();
       },
     });
@@ -546,13 +546,13 @@ export class Game {
 
     this.setupNetworkEvents();
 
-    const { composer, controls } = this.sceneCtx;
+    const { render, controls } = this.sceneCtx;
     world.start({
       beforeFrame: () => {
         controls.update();
       },
       afterFrame: () => {
-        composer.render();
+        render();
         this.resolveFirstFrame();
       },
     });
@@ -619,11 +619,11 @@ export class Game {
       },
     });
 
-    const { composer, controls } = this.sceneCtx;
+    const { render, controls } = this.sceneCtx;
     world.start({
       afterFrame: () => {
         controls.update();
-        composer.render();
+        render();
         this.resolveFirstFrame();
       },
     });

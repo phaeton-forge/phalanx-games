@@ -1,4 +1,8 @@
-import type { PlatformAdapter, SafeAreaInsets, AuthScheme } from './PlatformAdapter.ts';
+import type {
+  PlatformAdapter,
+  SafeAreaInsets,
+  AuthScheme,
+} from './PlatformAdapter.ts';
 import type { Language } from '../i18n/i18n.ts';
 import type { SDK as YandexSDKInstance } from 'ysdk';
 import {
@@ -35,7 +39,6 @@ export class YandexAdapter implements PlatformAdapter {
     await this.injectSDKScript();
 
     this.ysdk = await YaGames.init();
-    this.ysdk.features?.LoadingAPI?.ready?.();
     this.detectedLanguage = mapLanguageCode(this.ysdk.environment?.i18n?.lang);
 
     this.visibilityHandler = () => {
@@ -47,7 +50,11 @@ export class YandexAdapter implements PlatformAdapter {
   }
 
   ready(): void {
-    // Yandex uses LoadingAPI.ready() (called in init); nothing extra here.
+    // Signal to the Yandex platform that loading has finished and the game
+    // is ready to be shown. This must happen only once our own asset
+    // preloading + first frame render are complete — calling it during
+    // init() would tell Yandex the game is ready before assets have loaded.
+    this.ysdk?.features?.LoadingAPI?.ready?.();
   }
 
   getUserId(): string | null {
@@ -84,7 +91,9 @@ export class YandexAdapter implements PlatformAdapter {
     return `https://yandex.${tld}/games/app/${appId}?payload=${encodeURIComponent(normalized)}`;
   }
 
-  async tryShowFullscreenAd(_options: { blocking?: boolean } = {}): Promise<boolean> {
+  async tryShowFullscreenAd(
+    _options: { blocking?: boolean } = {}
+  ): Promise<boolean> {
     // Yandex's showFullscreenAdv already resolves via onClose — effectively
     // always "blocking". The `blocking` option is ignored here on purpose.
     console.log('[YandexAds] tryShowFullscreenAd');
@@ -95,7 +104,9 @@ export class YandexAdapter implements PlatformAdapter {
       try {
         const show = this.ysdk!.adv?.showFullscreenAdv;
         if (!show) {
-          console.warn('[YandexAds] fullscreen showFullscreenAdv not available');
+          console.warn(
+            '[YandexAds] fullscreen showFullscreenAdv not available'
+          );
           resolve(false);
           return;
         }
@@ -199,5 +210,3 @@ function rejectSDKLoad(reject: (reason?: unknown) => void): void {
   yandexSDKScriptPromise = null;
   reject(new Error('Failed to load Yandex Games SDK script'));
 }
-
-

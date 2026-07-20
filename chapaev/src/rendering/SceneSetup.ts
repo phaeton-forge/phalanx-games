@@ -25,7 +25,6 @@ import {
   HEMISPHERE_INTENSITY,
   FILL_LIGHT_COLOR,
   FILL_LIGHT_INTENSITY,
-  SHADOW_MAP_SIZE,
   TABLE_SIZE,
   BOARD_EXTENT,
   TABLE_BORDER_THICKNESS,
@@ -41,11 +40,12 @@ import {
   BLOOM_THRESHOLD,
   BLOOM_STRENGTH,
   BLOOM_RADIUS,
-  MAX_PIXEL_RATIO,
 } from '../config/constants.ts';
 import { assetManager } from './AssetManager.ts';
 import { BOARD_TEXTURES } from './AssetManifest.ts';
 import { setMaxAnisotropy, applyTextureQuality } from './textureQuality.ts';
+import { detectQualityTier, getQualityPreset } from './qualitySettings.ts';
+import { AdaptivePerformance } from './AdaptivePerformance.ts';
 
 /**
  * Screen-space vignette: darkens the edges of the frame for a
@@ -85,6 +85,9 @@ export interface SceneContext {
   readonly renderer: THREE.WebGLRenderer;
   readonly controls: OrbitControls;
   readonly composer: EffectComposer;
+  readonly perf: AdaptivePerformance;
+  /** Renders one frame (adaptive-quality bookkeeping + composer). */
+  readonly render: () => void;
 }
 
 /**
@@ -92,26 +95,35 @@ export interface SceneContext {
  * Returns a SceneContext for further use.
  */
 export function setupScene(canvas: HTMLCanvasElement): SceneContext {
+  // ── Quality preset (device-tier detection) ───────────────────
+  const quality = getQualityPreset(detectQualityTier());
+
   // ── Renderer ─────────────────────────────────────────────────
   const renderer = new THREE.WebGLRenderer({
     canvas,
-    antialias: true,
+    antialias: quality.antialias,
+    powerPreference: 'high-performance',
   });
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.6;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO));
+  renderer.shadowMap.type = quality.softShadows
+    ? THREE.PCFSoftShadowMap
+    : THREE.PCFShadowMap;
+  renderer.setPixelRatio(
+    Math.min(window.devicePixelRatio, quality.pixelRatioCap)
+  );
   renderer.setSize(window.innerWidth, window.innerHeight);
 
   // ── Diagnostics (mobile AA/pixelation investigation) ────────────
   const isWebGL2 = renderer.capabilities.isWebGL2;
   console.warn('[SceneSetup] Renderer diagnostics', {
+    qualityTier: quality.tier,
     devicePixelRatio: window.devicePixelRatio,
     clampedPixelRatio: renderer.getPixelRatio(),
-    maxPixelRatioConfig: MAX_PIXEL_RATIO,
-    antialiasContextFlag: true,
+    maxPixelRatioConfig: quality.pixelRatioCap,
+    antialiasContextFlag: quality.antialias,
     isWebGL2,
     maxSamples: renderer.capabilities.maxSamples,
     maxAnisotropy: renderer.capabilities.getMaxAnisotropy(),
@@ -120,7 +132,11 @@ export function setupScene(canvas: HTMLCanvasElement): SceneContext {
   // Anisotropic filtering for every texture loaded from here on
   // (board, checkers, table) — keeps edges sharp at grazing angles
   // instead of blurring out, without disabling mipmapping.
-  setMaxAnisotropy(renderer.capabilities.getMaxAnisotropy());
+  // Clamped by the quality tier: high sample counts cost bandwidth
+  // on weak mobile GPUs.
+  setMaxAnisotropy(
+    Math.min(renderer.capabilities.getMaxAnisotropy(), quality.anisotropyCap)
+  );
 
   // ── Scene ────────────────────────────────────────────────────
   const scene = new THREE.Scene();
@@ -177,13 +193,13 @@ export function setupScene(canvas: HTMLCanvasElement): SceneContext {
   );
   dirLight.position.set(9, 4.5, 2);
   dirLight.castShadow = true;
-  dirLight.shadow.mapSize.width = SHADOW_MAP_SIZE;
-  dirLight.shadow.mapSize.height = SHADOW_MAP_SIZE;
+  dirLight.shadow.mapSize.width = quality.shadowMapSize;
+  dirLight.shadow.mapSize.height = quality.shadowMapSize;
   dirLight.shadow.camera.near = 0.1;
   dirLight.shadow.camera.far = 40;
   dirLight.shadow.bias = 0.001;
   dirLight.shadow.normalBias = 0.01;
-  dirLight.shadow.radius = 20; // soft, diffused shadows
+  dirLight.shadow.radius = quality.shadowRadius; // soft, diffused shadows
   // Tight frustum around the board → higher shadow-texel density
   const shadowExtent = BOARD_EXTENT * 2;
   dirLight.shadow.camera.left = -shadowExtent;
@@ -344,14 +360,19 @@ export function setupScene(canvas: HTMLCanvasElement): SceneContext {
   const composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
 
-  // Bloom — makes emissive checker highlights glow
-  const bloomPass = new UnrealBloomPass(
-    new THREE.Vector2(window.innerWidth, window.innerHeight),
-    BLOOM_STRENGTH,
-    BLOOM_RADIUS,
-    BLOOM_THRESHOLD
-  );
-  composer.addPass(bloomPass);
+  // Bloom — makes emissive checker highlights glow. Skipped entirely on
+  // the low tier: its multi-target blur chain is the single most
+  // expensive post effect on weak GPUs.
+  let bloomPass: UnrealBloomPass | null = null;
+  if (quality.bloom) {
+    bloomPass = new UnrealBloomPass(
+      new THREE.Vector2(window.innerWidth, window.innerHeight),
+      BLOOM_STRENGTH,
+      BLOOM_RADIUS,
+      BLOOM_THRESHOLD
+    );
+    composer.addPass(bloomPass);
+  }
 
   const vignettePass = new ShaderPass(VignetteShader);
   vignettePass.uniforms['offset'].value = VIGNETTE_OFFSET;
@@ -363,25 +384,38 @@ export function setupScene(canvas: HTMLCanvasElement): SceneContext {
   // WebGL1 render targets can't be multisampled, so the MSAA above is a
   // no-op there — add an SMAA edge-AA pass as a fallback so those devices
   // still get smooth object edges. (No-op on WebGL2, where MSAA already
-  // handles it — keeps the desktop pipeline untouched.)
-  if (!isWebGL2) {
+  // handles it — keeps the desktop pipeline untouched.) Skipped on the
+  // low tier where we prefer FPS over edge quality.
+  if (!isWebGL2 && quality.antialias) {
     composer.addPass(new SMAAPass());
   }
 
+  // ── Adaptive resolution (runtime FPS-driven) ─────────────────
+  const perf = new AdaptivePerformance(
+    renderer,
+    composer,
+    Math.min(window.devicePixelRatio, quality.pixelRatioCap),
+    bloomPass
+  );
+
+  const render = (): void => {
+    perf.update();
+    composer.render();
+  };
+
   // ── Resize handler ──────────────────────────────────────────
   function handleResize(): void {
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO));
     camera.aspect = window.innerWidth / window.innerHeight;
     applyAspectFov(camera);
     camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    composer.setSize(window.innerWidth, window.innerHeight);
+    // Re-applies the adaptive pixel ratio + renderer/composer sizes.
+    perf.onResize(window.innerWidth, window.innerHeight);
   }
 
   window.addEventListener('resize', handleResize);
   window.addEventListener('orientationchange', handleResize);
 
-  return { scene, camera, renderer, controls, composer };
+  return { scene, camera, renderer, controls, composer, perf, render };
 }
 
 /**

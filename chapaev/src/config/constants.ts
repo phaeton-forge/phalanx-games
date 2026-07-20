@@ -30,13 +30,9 @@ export const CHECKER_BEVEL_SEGMENTS = 8;
 export const CHECKERS_PER_TEAM = 8;
 
 // ── Rendering quality ─────────────────────────────────────────────
-/**
- * Upper bound for `renderer.setPixelRatio`. Never use raw
- * `window.devicePixelRatio` directly — uncapped DPR (3+ on many phones)
- * tanks fill-rate/FPS for little visible benefit. Tune here if profiling
- * shows headroom (e.g. drop to 1.5 on low-end Android).
- */
-export const MAX_PIXEL_RATIO = 2;
+// Pixel-ratio caps, shadow map sizes, AA and bloom toggles now live in
+// per-device-tier presets — see `src/rendering/qualitySettings.ts`.
+// Runtime FPS-driven resolution scaling: `src/rendering/AdaptivePerformance.ts`.
 
 // ── Camera ────────────────────────────────────────────────────────
 export const CAMERA_FOV = 70;
@@ -56,7 +52,7 @@ export const AMBIENT_LIGHT_INTENSITY = 1.0;
 export const HEMISPHERE_SKY_COLOR = 0xffe0b2;
 export const HEMISPHERE_GROUND_COLOR = 0x5a4030;
 export const HEMISPHERE_INTENSITY = 0.9;
-export const SHADOW_MAP_SIZE = 4096;
+// Shadow map size is quality-tier dependent — see qualitySettings.ts.
 
 /** Cool fill light from opposite side to prevent pure-black shadows */
 export const FILL_LIGHT_COLOR = 0xbb9977;

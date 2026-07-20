@@ -1,5 +1,12 @@
 export { setupScene } from './SceneSetup.ts';
 export type { SceneContext } from './SceneSetup.ts';
+export {
+  detectQualityTier,
+  getQualityPreset,
+  setQualityOverride,
+} from './qualitySettings.ts';
+export type { QualityTier, QualityPreset } from './qualitySettings.ts';
+export { AdaptivePerformance } from './AdaptivePerformance.ts';
 export { createBoardMesh } from './BoardMesh.ts';
 export { createCheckerMesh } from './CheckerMesh.ts';
 export { AimingVisuals } from './AimingVisuals.ts';

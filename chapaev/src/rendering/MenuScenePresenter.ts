@@ -23,7 +23,7 @@ export class MenuScenePresenter {
   constructor(private readonly sceneCtx: SceneContext) {}
 
   startAutoRotate(): void {
-    const { controls, composer } = this.sceneCtx;
+    const { controls, render } = this.sceneCtx;
 
     controls.enabled = false;
     controls.autoRotate = true;
@@ -33,7 +33,7 @@ export class MenuScenePresenter {
 
     const animate = (): void => {
       controls.update();
-      composer.render();
+      render();
       this.rafHandle = requestAnimationFrame(animate);
     };
     this.rafHandle = requestAnimationFrame(animate);
